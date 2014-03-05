@@ -1,9 +1,28 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android" >
-
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/menuItemAddApp"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/action_settings"/>
+        android:title="Add an App"/>
+    
+    <item android:id="@+id/menuItemAllApp"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="All Apps"/>
+    
+    <item android:id="@+id/menuItemWallpaper"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Set Wallpaper"/>
+    
+    <item android:id="@+id/menuItemSettings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Settings"/>
+    
+    <item android:id="@+id/menuItemExit"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="Exit"/>
 
 </menu>

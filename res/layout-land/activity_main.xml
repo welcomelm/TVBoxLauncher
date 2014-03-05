@@ -1,0 +1,81 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/default_wallpaper"
+    tools:context=".MainActivity" >
+    
+    <LinearLayout android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:layout_weight="1.5">
+        
+        <LinearLayout android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:orientation="horizontal"
+        android:layout_weight="1">
+
+            <ImageView android:id="@+id/ivNet"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:src="@drawable/wifi" />
+            
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" />
+            
+        </LinearLayout>
+        
+        <LinearLayout android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:layout_weight="1.5">
+            
+            <TextView android:id="@+id/tvTime"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault.WindowTitle"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:text="Wednesday, March 5\n2:31PM"/>
+            
+        </LinearLayout>
+        
+        <LinearLayout android:layout_width="0dp"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:layout_weight="1">
+            
+			<Button android:id="@+id/btnMenu"
+			    android:layout_width="wrap_content"
+			    android:layout_height="fill_parent"
+			    android:layout_gravity="right"
+                android:textStyle="bold"
+                android:textSize="18sp"
+                android:textColor="@android:color/white"			 	
+			    android:text="MENU"
+			    android:onClick="showPopup"/>
+
+        </LinearLayout>
+        
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="0dp"
+        android:layout_weight="8" >
+        
+        <GridView android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:stackFromBottom="false"
+            android:numColumns="4"
+            android:visibility="invisible" >
+            
+        </GridView>
+        
+    </LinearLayout>
+
+</LinearLayout>
