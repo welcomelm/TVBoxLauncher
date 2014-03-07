@@ -63,19 +63,42 @@
         
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="8" >
-        
-        <GridView android:layout_width="fill_parent"
+
+        <GridView
+            android:id="@+id/gvApp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:numColumns="7"
+            android:stackFromBottom="false"
+            android:visibility="invisible" >
+        </GridView>
+			
+        <GridView android:id="@+id/gvAddApp"
+            android:layout_width="fill_parent"
             android:layout_height="fill_parent"
             android:stackFromBottom="false"
-            android:numColumns="4"
+            android:numColumns="7"
             android:visibility="invisible" >
+			
+        </GridView>
+            
+        <GridView android:id="@+id/gvShowApp"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+        	android:numColumns="auto_fit"
+            android:stackFromBottom="false"
+            android:columnWidth="100dp"
+            android:stretchMode="spacingWidth"
+            android:visibility="invisible"
+            android:scrollbars="none"
+            android:listSelector="@drawable/app_select_frame">
             
         </GridView>
         
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>
