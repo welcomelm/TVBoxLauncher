@@ -34,11 +34,12 @@ import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnItemSelectedListener {
+public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener {
 
 	private GridView gvApp, gvShowApp, gvAddApp;
 	
 	private AppAdapter allAppAdapter;
+	private FavoriteAdapter favoriteAppAdapter;
 	
 	private Animation fadeIn;
 	
@@ -46,8 +47,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		
-		allAppAdapter = new AppAdapter(this);
 		
 		findViews();
 		
@@ -68,7 +67,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		gvShowApp.setOnItemClickListener(this);
 		gvShowApp.setOnItemLongClickListener(this);
-		gvShowApp.setOnItemSelectedListener(this);
+//		gvShowApp.setOnItemSelectedListener(this);
 	}
 
 	private void findViews() {
@@ -80,6 +79,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
+		allAppAdapter = new AppAdapter(this);
+		favoriteAppAdapter = new FavoriteAdapter(this);
+		
+        allAppAdapter.clear();
+        favoriteAppAdapter.clear();
+		
         PackageManager manager = getPackageManager();
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
@@ -90,8 +95,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
         if (apps != null) {
             final int count = apps.size();
-
-            allAppAdapter.clear();
 
             for (int i = 0; i < count; i++) {
                 ApplicationInfo application = new ApplicationInfo();
@@ -111,6 +114,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         
         gvShowApp.setAdapter(allAppAdapter);
         gvShowApp.setSelection(0);
+        
+        gvApp.setAdapter(favoriteAppAdapter);
+        gvApp.setSelection(0);
 	}
 
 	@Override
@@ -139,11 +145,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         switch (item.getItemId()) {
             case R.id.menuItemAddApp:
             	gvShowApp.setVisibility(GridView.INVISIBLE);
+            	gvApp.setVisibility(GridView.INVISIBLE);
             	gvAddApp.setVisibility(GridView.VISIBLE);
                 return true;
             case R.id.menuItemAllApp:
             	gvAddApp.setVisibility(GridView.INVISIBLE);
             	gvShowApp.setVisibility(GridView.VISIBLE);
+            	gvApp.setVisibility(GridView.INVISIBLE);
                 return true;
             case R.id.menuItemSettings:
             	return true;
@@ -199,20 +207,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		ApplicationInfo info = (ApplicationInfo)parent.getItemAtPosition(position);
 		String addStr = getResources().getString(R.string.add_app);
 		Toast.makeText(this, info.title + " " + addStr, Toast.LENGTH_SHORT).show();
+		favoriteAppAdapter.add(info);
 		return true;
-	}
-
-	@Override
-	public void onItemSelected(AdapterView<?> parent, View view, int position,
-			long id) {
-		// TODO Auto-generated method stub
-//		ImageView iv = (ImageView) view.findViewById(R.id.ivAppIcon);
-//		iv.setBackgroundResource(android.R.drawable.dialog_holo_light_frame);
-	}
-
-	@Override
-	public void onNothingSelected(AdapterView<?> parent) {
-		// TODO Auto-generated method stub
-		
 	}
 }

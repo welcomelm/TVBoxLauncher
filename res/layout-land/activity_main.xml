@@ -72,9 +72,13 @@
             android:id="@+id/gvApp"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:numColumns="7"
+        	android:numColumns="auto_fit"
             android:stackFromBottom="false"
-            android:visibility="invisible" >
+            android:columnWidth="150dp"
+            android:stretchMode="spacingWidth"
+            android:visibility="visible"
+            android:scrollbars="none"
+            android:listSelector="@drawable/app_select_frame">
         </GridView>
 			
         <GridView android:id="@+id/gvAddApp"
