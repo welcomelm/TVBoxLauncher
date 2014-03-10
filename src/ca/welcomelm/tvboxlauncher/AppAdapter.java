@@ -17,10 +17,12 @@ import android.widget.TextView;
 public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 
 	private Context context;
+	private int resID;
 
-	public AppAdapter(Context context) {
+	public AppAdapter(Context context, int resID) {
 		super(context, 0);
 		this.context = context;
+		this.resID = resID;
 	}
 
 	@Override
@@ -31,7 +33,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 		if (convertView != null) {
 			ll = (LinearLayout) convertView;
 		}else {
-			ll = (LinearLayout) LayoutInflater.from(context).inflate(R.layout.app_cell, parent, false);
+			ll = (LinearLayout) LayoutInflater.from(context).inflate(resID, parent, false);
 		}		
 		
 		ApplicationInfo appInfo = getItem(position);

@@ -1,16 +1,25 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
+import android.support.v4.app.ShareCompat.IntentReader;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -32,16 +41,27 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener {
+	
+	private final String TIME_FORMAT = "EEEE MMM d, h:mm a";
 
 	private GridView gvApp, gvShowApp, gvAddApp;
 	
 	private AppAdapter allAppAdapter;
-	private FavoriteAdapter favoriteAppAdapter;
+	private AppAdapter favoriteAppAdapter;
 	
 	private Animation fadeIn;
+	
+	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver;
+	
+	private TextView tvTime;
+	
+	private DateFormat df;
+	
+	private ConnectivityManager cm;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +70,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		findViews();
 		
+		updateTime();
+		
+		updateNetworks();
+		
+		registerIntentReceivers();
+		
 		bindListeners();
 		
 		loadApplications();
@@ -57,10 +83,67 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		loadAnimations();
 
 	}
+	
+	private void updateTime(){
+		
+		Date date = new Date();
+		
+		if (df == null) {
+			df = new SimpleDateFormat(TIME_FORMAT);
+		}
+		
+		tvTime.setText(df.format(date));
+		
+	}
+
+	private void registerIntentReceivers() {
+		// TODO Auto-generated method stub
+		timeUpateReceiver = new TimeUpdateReceiver();
+		IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(timeUpateReceiver, filter);
+        
+        networkUpdateReceiver = new NetworkUpdateReceiver();
+        filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(networkUpdateReceiver, filter);
+		
+	}
+	
+	private class TimeUpdateReceiver extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			updateTime();
+		}
+		
+		
+	}
+	
+	private class NetworkUpdateReceiver extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+			updateNetworks();
+		}
+		
+		
+	}
 
 	private void loadAnimations() {
 		// TODO Auto-generated method stub
 		fadeIn = AnimationUtils.loadAnimation(this, R.anim.grid_entry);
+	}
+
+	private void updateNetworks() {
+		// TODO Auto-generated method stub
+		if (cm == null) {
+			cm = (ConnectivityManager) MainActivity.this.getSystemService(CONNECTIVITY_SERVICE);
+		}
+		
+		for(NetworkInfo info : cm.getAllNetworkInfo()){
+			System.out.println(info.getTypeName() + "...isConnected... " + info.isConnected());
+		}
 	}
 
 	private void bindListeners() {
@@ -75,12 +158,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvApp = (GridView) findViewById(R.id.gvApp);
 		gvAddApp = (GridView) findViewById(R.id.gvAddApp);
 		gvShowApp = (GridView) findViewById(R.id.gvShowApp);
+		
+		tvTime = (TextView) findViewById(R.id.tvTime);
+		
 	}
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
-		allAppAdapter = new AppAdapter(this);
-		favoriteAppAdapter = new FavoriteAdapter(this);
+		allAppAdapter = new AppAdapter(this, R.layout.app_cell);
+		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
 		
         allAppAdapter.clear();
         favoriteAppAdapter.clear();
@@ -209,5 +295,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		Toast.makeText(this, info.title + " " + addStr, Toast.LENGTH_SHORT).show();
 		favoriteAppAdapter.add(info);
 		return true;
+	}
+	
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		unregisterReceiver(timeUpateReceiver);
 	}
 }

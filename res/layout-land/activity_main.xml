@@ -39,8 +39,7 @@
                 android:gravity="center"
                 android:textAppearance="@android:style/TextAppearance.DeviceDefault.WindowTitle"
                 android:textStyle="bold"
-                android:textSize="18sp"
-                android:text="Wednesday, March 5\n2:31PM"/>
+                android:textSize="18sp" />
             
         </LinearLayout>
         
