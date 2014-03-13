@@ -33,9 +33,11 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnFocusChangeListener;
 import android.view.WindowManager;
 import android.view.animation.Animation;
@@ -311,6 +313,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvApp.setOnItemClickListener(this);
 		gvApp.setOnItemLongClickListener(this);
 		btnMenu.setOnFocusChangeListener(this);
+		registerForContextMenu(btnMenu);
 	}
 
 	private void findViews() {
@@ -364,8 +367,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
+		openContextMenu(btnMenu);
+		return false;
 	}
 	
     @Override
@@ -379,7 +382,27 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
     }
 	
 	public void showPopup(View v) {
-		openOptionsMenu();
+		openContextMenu(v);
+	}
+	
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		// TODO Auto-generated method stub
+        switch (item.getItemId()) {
+        case R.id.menuItemAllApp:
+        	gvShowApp.setVisibility(GridView.VISIBLE);
+        	gvApp.setVisibility(GridView.INVISIBLE);
+            return true;
+        case R.id.menuItemSettings:
+        	Intent settings = new Intent(Settings.ACTION_SETTINGS);
+        	startActivity(settings);
+        	return true;
+        case R.id.menuItemWallpaper:
+            Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
+            startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
+        	return true;
+    }
+		return super.onContextItemSelected(item);
 	}
 	
     @Override
@@ -555,5 +578,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public void onFocusChange(View v, boolean hasFocus) {
 		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		// TODO Auto-generated method stub
+		super.onCreateContextMenu(menu, v, menuInfo);
+	    super.onCreateContextMenu(menu, v, menuInfo);
+	    getMenuInflater().inflate(R.menu.main, menu);
 	}
 }
