@@ -32,4 +32,28 @@ public class ApplicationInfo {
         intent.setComponent(className);
         intent.setFlags(launchFlags);
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ApplicationInfo)) {
+            return false;
+        }
+
+        ApplicationInfo that = (ApplicationInfo) o;
+        return title.equals(that.title) &&
+                intent.getComponent().getClassName().equals(
+                        that.intent.getComponent().getClassName());
+    }
+    
+    @Override
+    public int hashCode() {
+        int result;
+        result = (title != null ? title.hashCode() : 0);
+        final String name = intent.getComponent().getClassName();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
 }

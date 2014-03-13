@@ -3,59 +3,44 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/default_wallpaper"
     tools:context=".MainActivity" >
     
     <LinearLayout android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:orientation="horizontal"
-        android:layout_weight="1.5">
-        
-        <LinearLayout android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:orientation="horizontal"
         android:layout_weight="1">
-
+        
+        <LinearLayout android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:gravity="left"
+        android:orientation="horizontal">
+        
             <ImageView android:id="@+id/ivNet"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:src="@drawable/wifi" />
-            
-            <ImageView
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent" />
-            
-        </LinearLayout>
-        
-        <LinearLayout android:layout_width="0dp"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:layout_weight="1.5">
-            
+                android:layout_width="40dp"
+                android:layout_height="fill_parent"/>
+   
             <TextView android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="fill_parent"
-                android:layout_gravity="center"
-                android:gravity="center"
-                android:textAppearance="@android:style/TextAppearance.DeviceDefault.WindowTitle"
-                android:textStyle="bold"
-                android:textSize="18sp" />
+	            android:layout_width="wrap_content"
+	            android:layout_height="fill_parent"
+	            android:layout_gravity="center"
+	            android:gravity="center"
+	            android:textAppearance="@android:style/TextAppearance.Holo.DialogWindowTitle"
+	            android:textSize="18sp" 
+	            android:textColor="@android:color/black"/>
             
-        </LinearLayout>
+     	</LinearLayout>
         
-        <LinearLayout android:layout_width="0dp"
+        <LinearLayout android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:orientation="vertical"
-        android:layout_weight="1">
+        android:paddingRight="2dp"
+        android:paddingTop="5dp">
             
-			<Button android:id="@+id/btnMenu"
+			<ImageButton android:id="@+id/btnMenu"
 			    android:layout_width="wrap_content"
 			    android:layout_height="fill_parent"
 			    android:layout_gravity="right"
-                android:textStyle="bold"
-                android:textSize="18sp"
-                android:textColor="@android:color/white"			 	
-			    android:text="MENU"
+			    android:background="@drawable/menu_button"
 			    android:onClick="showPopup"/>
 
         </LinearLayout>
@@ -65,7 +50,8 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="8" >
+        android:layout_weight="10"
+        android:padding="5dp" >
 
         <GridView
             android:id="@+id/gvApp"
@@ -77,16 +63,13 @@
             android:stretchMode="spacingWidth"
             android:visibility="visible"
             android:scrollbars="none"
-            android:listSelector="@drawable/app_select_frame">
-        </GridView>
-			
-        <GridView android:id="@+id/gvAddApp"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:stackFromBottom="false"
-            android:numColumns="7"
-            android:visibility="invisible" >
-			
+            android:listSelector="@drawable/list_selector"
+            android:verticalSpacing="40dp"
+            android:horizontalSpacing="20dp"
+            android:paddingLeft="35dp"
+            android:paddingRight="35dp"
+            android:paddingTop="35dp"
+            android:paddingBottom="35dp">
         </GridView>
             
         <GridView android:id="@+id/gvShowApp"

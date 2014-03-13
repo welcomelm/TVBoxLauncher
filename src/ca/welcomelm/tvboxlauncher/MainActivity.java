@@ -1,67 +1,82 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Bundle;
+
 import android.app.Activity;
+import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
-import android.support.v4.app.ShareCompat.IntentReader;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.view.KeyEvent;
+import android.graphics.PorterDuff;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Bundle;
+import android.os.Environment;
+import android.provider.Settings;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener {
+public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnFocusChangeListener {
 	
-	private final String TIME_FORMAT = "EEEE MMM d, h:mm a";
+	private final String FAVORITE_FILE = "favorites.txt";
+	
+    private final String TIME_FORMAT = "h:mma";
 
-	private GridView gvApp, gvShowApp, gvAddApp;
+	private GridView gvApp, gvShowApp;
 	
 	private AppAdapter allAppAdapter;
 	private AppAdapter favoriteAppAdapter;
 	
-	private Animation fadeIn;
+	//To prevent adding the same app to favorites
+	private HashSet<ApplicationInfo> favoriteSet;
 	
-	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver;
+	private Animation fadeIn, scale;
+	
+	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver, appUpdateReceiver, wallpaperReceiver;
 	
 	private TextView tvTime;
 	
 	private DateFormat df;
 	
 	private ConnectivityManager cm;
+	
+	private ImageView ivNetwork;
+	
+	private ImageButton btnMenu;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,14 +91,76 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		registerIntentReceivers();
 		
+		setDefaultWallpaper();
+		
 		bindListeners();
+		
+		loadFavorites();
 		
 		loadApplications();
 		
-		loadAnimations();
+		loadAnimations();	
 
 	}
 	
+	private void setDefaultWallpaper() {
+		// TODO Auto-generated method stub
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
+		try {
+			WallpaperManager.getInstance(this).setResource(R.drawable.default_wallpaper);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private void loadFavorites() {
+		// TODO Auto-generated method stub
+		PackageManager manager = getPackageManager();
+		
+		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
+		favoriteSet = new HashSet<ApplicationInfo>();
+        favoriteAppAdapter.clear();
+        
+		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
+		
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+        
+        try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(dir, FAVORITE_FILE))));
+			
+			String str;
+			
+			while((str = br.readLine()) != null){
+				ApplicationInfo info = new ApplicationInfo();
+				info.setActivity(ComponentName.unflattenFromString(str), 
+						Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+		        ResolveInfo resInfo = manager.resolveActivity(info.intent, 0);
+		        
+		        if (resInfo != null) {
+					info.icon = resInfo.loadIcon(manager);
+					info.title = resInfo.loadLabel(manager);
+					if (favoriteSet.add(info)) {
+						favoriteAppAdapter.add(info);	
+					}
+				}
+			}
+			
+			br.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+        
+        gvApp.setAdapter(favoriteAppAdapter);
+        gvApp.setSelection(0);
+	}
+
 	private void updateTime(){
 		
 		Date date = new Date();
@@ -105,8 +182,75 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         networkUpdateReceiver = new NetworkUpdateReceiver();
         filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(networkUpdateReceiver, filter);
-		
+        
+        appUpdateReceiver = new AppUpdateReceiver();
+        filter = new IntentFilter(Intent.ACTION_PACKAGE_ADDED);
+        filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        filter.addDataScheme("package");
+        registerReceiver(appUpdateReceiver, filter);
+        
+        wallpaperReceiver = new WallpaperReceiver();
+        filter = new IntentFilter(Intent.ACTION_WALLPAPER_CHANGED);
+        registerReceiver(wallpaperReceiver, filter);
 	}
+
+    /**
+     * Receives intents from other applications to change the wallpaper.
+     */
+    private class WallpaperReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            getWindow().setBackgroundDrawable(WallpaperManager.getInstance(MainActivity.this).getDrawable());
+        }
+    }
+	
+    /**
+     * Receives notifications when applications are added/removed.
+     */
+    private class AppUpdateReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+        	if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) ||
+        			intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
+				String pkgName = intent.getData().getEncodedSchemeSpecificPart();
+				PackageManager pm = getPackageManager();
+				Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+				try {
+					android.content.pm.ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+					if (launchIntent != null && appInfo != null) { 
+						ApplicationInfo info = new ApplicationInfo();
+						info.title = appInfo.loadLabel(pm);
+						info.icon = appInfo.loadIcon(pm);
+						info.intent = launchIntent;
+						allAppAdapter.add(info);
+					}
+				} catch (NameNotFoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+        	
+        	if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
+        		String pkgName = intent.getData().getEncodedSchemeSpecificPart();
+        		for (int pos = 0; pos < allAppAdapter.getCount(); pos++) {
+        			ApplicationInfo info = allAppAdapter.getItem(pos);
+        			if (info.intent.getComponent().getPackageName().equals(pkgName)) {
+        				allAppAdapter.remove(info);
+					}					
+				}
+
+        		for (int pos = 0; pos < favoriteAppAdapter.getCount(); pos++) {
+        			ApplicationInfo info = favoriteAppAdapter.getItem(pos);
+        			if (info.intent.getComponent().getPackageName().equals(pkgName)) {
+        				favoriteSet.remove(info);
+        				favoriteAppAdapter.remove(info);
+        				removeFavorite(info);
+					}					
+				}
+			}
+        }
+    }
 	
 	private class TimeUpdateReceiver extends BroadcastReceiver{
 
@@ -132,7 +276,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadAnimations() {
 		// TODO Auto-generated method stub
-		fadeIn = AnimationUtils.loadAnimation(this, R.anim.grid_entry);
+		fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+		scale = AnimationUtils.loadAnimation(this, R.anim.scale);
 	}
 
 	private void updateNetworks() {
@@ -141,8 +286,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			cm = (ConnectivityManager) MainActivity.this.getSystemService(CONNECTIVITY_SERVICE);
 		}
 		
-		for(NetworkInfo info : cm.getAllNetworkInfo()){
+//		for(NetworkInfo info : cm.getAllNetworkInfo()){
+//			System.out.println(info.getTypeName() + "...isConnected... " + info.isConnected());
+//		}
+		
+		NetworkInfo info = cm.getActiveNetworkInfo();
+		
+		if(info == null || !info.isConnected()){
 			System.out.println(info.getTypeName() + "...isConnected... " + info.isConnected());
+			ivNetwork.setImageResource(R.drawable.disconnect);
+		}else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
+			ivNetwork.setImageResource(R.drawable.ethernet);
+		}else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
+			ivNetwork.setImageResource(R.drawable.wifi);
+		}else{
+			ivNetwork.setImageResource(R.drawable.mobile);
 		}
 	}
 
@@ -150,26 +308,27 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		gvShowApp.setOnItemClickListener(this);
 		gvShowApp.setOnItemLongClickListener(this);
-//		gvShowApp.setOnItemSelectedListener(this);
+		gvApp.setOnItemClickListener(this);
+		gvApp.setOnItemLongClickListener(this);
+		btnMenu.setOnFocusChangeListener(this);
 	}
 
 	private void findViews() {
 		// TODO Auto-generated method stub
 		gvApp = (GridView) findViewById(R.id.gvApp);
-		gvAddApp = (GridView) findViewById(R.id.gvAddApp);
 		gvShowApp = (GridView) findViewById(R.id.gvShowApp);
 		
 		tvTime = (TextView) findViewById(R.id.tvTime);
 		
+		ivNetwork = (ImageView) findViewById(R.id.ivNet);
+		
+		btnMenu = (ImageButton) findViewById(R.id.btnMenu);
 	}
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
 		allAppAdapter = new AppAdapter(this, R.layout.app_cell);
-		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
-		
         allAppAdapter.clear();
-        favoriteAppAdapter.clear();
 		
         PackageManager manager = getPackageManager();
 
@@ -200,9 +359,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         
         gvShowApp.setAdapter(allAppAdapter);
         gvShowApp.setSelection(0);
-        
-        gvApp.setAdapter(favoriteAppAdapter);
-        gvApp.setSelection(0);
 	}
 
 	@Override
@@ -229,19 +385,17 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menuItemAddApp:
-            	gvShowApp.setVisibility(GridView.INVISIBLE);
-            	gvApp.setVisibility(GridView.INVISIBLE);
-            	gvAddApp.setVisibility(GridView.VISIBLE);
-                return true;
             case R.id.menuItemAllApp:
-            	gvAddApp.setVisibility(GridView.INVISIBLE);
             	gvShowApp.setVisibility(GridView.VISIBLE);
             	gvApp.setVisibility(GridView.INVISIBLE);
                 return true;
             case R.id.menuItemSettings:
+            	Intent settings = new Intent(Settings.ACTION_SETTINGS);
+            	startActivity(settings);
             	return true;
             case R.id.menuItemWallpaper:
+                Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
+                startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
             	return true;
         }
 
@@ -254,8 +408,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		final int pos = position;
 		final AdapterView<?> av = parent;
+		Animation anim = fadeIn;
 		
-		fadeIn.setAnimationListener(new AnimationListener() {
+//		switch (av.getId()) {
+//		case R.id.gvApp:
+//			anim = scale;
+//			break;
+//		}
+		
+		anim.setAnimationListener(new AnimationListener() {
 			
 			@Override
 			public void onAnimationStart(Animation animation) {
@@ -275,14 +436,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 				startActivity(info.intent);					
 			}
 		});
-		view.startAnimation(fadeIn);
+		view.startAnimation(anim);
 	}
 	
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
 		gvApp.setVisibility(GridView.VISIBLE);
-		gvAddApp.setVisibility(GridView.INVISIBLE);
 		gvShowApp.setVisibility(GridView.INVISIBLE);
 	}
 
@@ -290,17 +450,110 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
 		// TODO Auto-generated method stub
-		ApplicationInfo info = (ApplicationInfo)parent.getItemAtPosition(position);
-		String addStr = getResources().getString(R.string.add_app);
-		Toast.makeText(this, info.title + " " + addStr, Toast.LENGTH_SHORT).show();
-		favoriteAppAdapter.add(info);
-		return true;
+		ApplicationInfo info;
+		switch (parent.getId()) {
+		case R.id.gvShowApp:
+			info = (ApplicationInfo)parent.getItemAtPosition(position);
+			String addStr = getResources().getString(R.string.add_app);
+			Toast.makeText(this, info.title + " " + addStr, Toast.LENGTH_SHORT).show();
+			if (favoriteSet.add(info)) {
+				favoriteAppAdapter.add(info);
+				addFavorite(info);				
+			}
+			return true;
+		case R.id.gvApp:
+			info = (ApplicationInfo)parent.getItemAtPosition(position);
+			favoriteSet.remove(info);
+			favoriteAppAdapter.remove(info);
+			removeFavorite(info);
+			return true;
+		default:
+			return false;
+		}
 	}
 	
+	private void removeFavorite(ApplicationInfo info) {
+		// TODO Auto-generated method stub
+		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
+		
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		
+		File fav = new File(dir, FAVORITE_FILE);
+		File temp = new File(dir, "temp.txt");
+		
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fav)));
+			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(temp, false));
+			
+			String str;
+			
+			while(true){
+				str = br.readLine();
+				if(str == null){
+					break;
+				}
+				
+				if(str.equals(info.intent.getComponent().flattenToString())){
+					continue;
+				}
+				
+				osw.append(str);
+				osw.append(System.getProperty("line.separator"));
+			}
+			
+			osw.flush();
+			osw.close();
+			br.close();
+			
+			fav.delete();
+			temp.renameTo(fav);
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
+
+	private void addFavorite(ApplicationInfo info) {
+		// TODO Auto-generated method stub
+		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
+		
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+
+		try {
+			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(new File(dir, FAVORITE_FILE), true));
+			osw.append(info.intent.getComponent().flattenToString());
+			osw.append(System.getProperty("line.separator"));		
+			osw.flush();
+			osw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		super.onDestroy();
 		unregisterReceiver(timeUpateReceiver);
+		unregisterReceiver(networkUpdateReceiver);
+		unregisterReceiver(appUpdateReceiver);
+		unregisterReceiver(wallpaperReceiver);
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		// TODO Auto-generated method stub
 	}
 }
