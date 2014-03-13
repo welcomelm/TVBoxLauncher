@@ -42,7 +42,6 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 			TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);
 			tv.setText(appInfo.title);
 			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);
-			tv.setBackgroundResource(R.drawable.app_background);
 			return ll;
 		}
 		

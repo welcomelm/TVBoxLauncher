@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	//To prevent adding the same app to favorites
 	private HashSet<ApplicationInfo> favoriteSet;
 	
-	private Animation fadeIn, scale;
+	private Animation fade, scale;
 	
 	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver, appUpdateReceiver, wallpaperReceiver;
 	
@@ -276,7 +276,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadAnimations() {
 		// TODO Auto-generated method stub
-		fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+		fade = AnimationUtils.loadAnimation(this, R.anim.fade);
 		scale = AnimationUtils.loadAnimation(this, R.anim.scale);
 	}
 
@@ -408,7 +408,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		final int pos = position;
 		final AdapterView<?> av = parent;
-		Animation anim = fadeIn;
+		Animation anim = fade;
 		
 //		switch (av.getId()) {
 //		case R.id.gvApp:
