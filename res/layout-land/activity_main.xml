@@ -50,8 +50,7 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="10"
-        android:padding="5dp" >
+        android:layout_weight="10">
 
         <GridView
             android:id="@+id/gvApp"
@@ -59,11 +58,10 @@
             android:layout_height="fill_parent"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
-            android:columnWidth="160dp"
             android:stretchMode="spacingWidth"
             android:visibility="visible"
             android:scrollbars="none"
-            android:listSelector="@drawable/list_selector"
+            android:listSelector="@drawable/app_big_list_selector"
             android:verticalSpacing="40dp"
             android:horizontalSpacing="20dp"
             android:paddingLeft="35dp"
@@ -77,11 +75,12 @@
             android:layout_height="fill_parent"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
-            android:columnWidth="100dp"
             android:stretchMode="spacingWidth"
             android:visibility="invisible"
             android:scrollbars="none"
-            android:listSelector="@drawable/app_select_frame">
+            android:padding="10dp"
+            android:verticalSpacing="10dp"
+            android:listSelector="@drawable/app_list_selector">
             
         </GridView>
         

@@ -27,12 +27,14 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,12 +82,16 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageButton btnMenu;
 	
+	private Point gvAppCellDimension, gvShowAppCellDimension;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
 		findViews();
+		
+		setDimension();
 		
 		updateTime();
 		
@@ -105,6 +111,23 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	}
 	
+	private void setDimension() {
+		// TODO Auto-generated method stub
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		System.out.println(metrics.toString());
+		
+		int gvAppColumnWidth = metrics.widthPixels / 4;
+		int gvShowAppColumnWidth = metrics.widthPixels / 6;
+
+		gvApp.setColumnWidth(gvAppColumnWidth);
+		
+		gvShowApp.setColumnWidth(gvShowAppColumnWidth);
+		
+		gvAppCellDimension = new Point(gvAppColumnWidth, metrics.heightPixels / 4);
+		gvShowAppCellDimension = new Point(gvShowAppColumnWidth, metrics.heightPixels / 4);		
+	}
+
 	private void setDefaultWallpaper() {
 		// TODO Auto-generated method stub
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
@@ -120,7 +143,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		PackageManager manager = getPackageManager();
 		
-		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
+		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell, gvAppCellDimension);
 		favoriteSet = new HashSet<ApplicationInfo>();
         favoriteAppAdapter.clear();
         
@@ -330,7 +353,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
-		allAppAdapter = new AppAdapter(this, R.layout.app_cell);
+		allAppAdapter = new AppAdapter(this, R.layout.app_cell, gvShowAppCellDimension);
         allAppAdapter.clear();
 		
         PackageManager manager = getPackageManager();
