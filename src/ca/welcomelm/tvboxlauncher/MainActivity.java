@@ -35,6 +35,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +52,7 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -82,11 +84,18 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageButton btnMenu;
 	
+	private LinearLayout llBtnMenu , llNetAndTime, llMain;
+	
 	private Point gvAppCellDimension, gvShowAppCellDimension;
+	
+	static boolean splashIsOn = false;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		startSplash();
+		
 		super.onCreate(savedInstanceState);
+		
 		setContentView(R.layout.activity_main);
 		
 		findViews();
@@ -111,6 +120,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	}
 	
+	private void startSplash() {
+		// TODO Auto-generated method stub
+		Thread splashThread = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				startActivity(new Intent(getApplicationContext(), SplashScreen.class));
+			}
+		});
+		
+		splashThread.setName("SplashScreen");
+		splashThread.start();
+	}
+
 	private void setDimension() {
 		// TODO Auto-generated method stub
 		DisplayMetrics metrics = new DisplayMetrics();
@@ -124,14 +148,31 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		gvShowApp.setColumnWidth(gvShowAppColumnWidth);
 		
-		gvAppCellDimension = new Point(gvAppColumnWidth, metrics.heightPixels / 4);
-		gvShowAppCellDimension = new Point(gvShowAppColumnWidth, metrics.heightPixels / 4);		
+		gvAppCellDimension = new Point(gvAppColumnWidth, (int) (metrics.heightPixels / 3.5));
+		gvShowAppCellDimension = new Point(gvShowAppColumnWidth, metrics.heightPixels / 4);
+		
+		gvApp.setPadding(metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32);
+		gvApp.setVerticalSpacing(metrics.widthPixels/16);
+		gvApp.setHorizontalSpacing(metrics.widthPixels/32);
+		
+		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
+		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
+		
+		ivNetwork.setAdjustViewBounds(true);
+		ivNetwork.setMaxWidth(metrics.widthPixels/16);
+		
+		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
+		
+		llBtnMenu.setPadding(0, 0, metrics.widthPixels/128, 0);
+		
+		llNetAndTime.setPadding(metrics.widthPixels/128, 0, 0, 0);
 	}
 
 	private void setDefaultWallpaper() {
 		// TODO Auto-generated method stub
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
 		try {
+			WallpaperManager.getInstance(this).suggestDesiredDimensions(1280, 720);
 			WallpaperManager.getInstance(this).setResource(R.drawable.default_wallpaper);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -226,7 +267,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
     private class WallpaperReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            getWindow().setBackgroundDrawable(WallpaperManager.getInstance(MainActivity.this).getDrawable());
+        	System.out.println("WallpaperReceiver");
+            getWindow().setBackgroundDrawable(WallpaperManager.getInstance(getApplicationContext()).peekDrawable());
         }
     }
 	
@@ -349,6 +391,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		ivNetwork = (ImageView) findViewById(R.id.ivNet);
 		
 		btnMenu = (ImageButton) findViewById(R.id.btnMenu);
+		
+		llBtnMenu = (LinearLayout) findViewById(R.id.llBtnMenu);
+		
+		llNetAndTime = (LinearLayout) findViewById(R.id.llNetAndTime);
+		
+		llMain = (LinearLayout) findViewById(R.id.llMain);
 	}
 
 	private void loadApplications() {

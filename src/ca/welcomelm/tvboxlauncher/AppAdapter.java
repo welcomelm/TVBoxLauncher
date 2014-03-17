@@ -5,6 +5,8 @@ import java.util.zip.Inflater;
 import android.content.Context;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
+import android.graphics.Typeface;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +48,8 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 			tv.setWidth(dimension.x);
 			tv.setHeight(dimension.y);
 			tv.setText(appInfo.title);
+			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
+			tv.setPadding(0, dimension.x/15, 0, dimension.x/30);
 			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);
 			return ll;
 //		}
