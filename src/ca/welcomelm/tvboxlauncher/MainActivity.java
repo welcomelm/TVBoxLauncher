@@ -46,6 +46,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
@@ -57,6 +58,7 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -92,7 +94,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppDimension;
 	
-	static boolean splashIsOn = false;
+	private PopupWindow menu;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,6 +107,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		findViews();
 		
 		setDimension();
+		
+		popupInit();
 		
 		updateTime();
 		
@@ -124,6 +128,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	}
 	
+	private void popupInit() {
+		// TODO Auto-generated method stub
+		menu = new PopupWindow(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		menu.setContentView(LinearLayout.inflate(this, R.layout.menu, null));
+		menu.setFocusable(true);
+		menu.setOutsideTouchable(true);
+	}
+
 	private void startSplash() {
 		// TODO Auto-generated method stub
 		Thread splashThread = new Thread(new Runnable() {
@@ -460,7 +472,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
     }
 	
 	public void showPopup(View v) {
-		openContextMenu(v);
+		menu.showAsDropDown(v);
 	}
 	
 	@Override
@@ -545,6 +557,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		gvApp.setVisibility(GridView.VISIBLE);
 		gvShowApp.setVisibility(GridView.INVISIBLE);
+		menu.dismiss();
 	}
 
 	@Override
