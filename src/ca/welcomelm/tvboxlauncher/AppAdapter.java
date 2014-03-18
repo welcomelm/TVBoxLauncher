@@ -4,8 +4,15 @@ import java.util.zip.Inflater;
 
 import android.content.Context;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PaintFlagsDrawFilter;
+import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.Shader;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;

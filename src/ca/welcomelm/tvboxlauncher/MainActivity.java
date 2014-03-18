@@ -26,9 +26,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -86,7 +90,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private LinearLayout llBtnMenu , llNetAndTime, llMain;
 	
-	private Point gvAppCellDimension, gvShowAppCellDimension;
+	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppDimension;
 	
 	static boolean splashIsOn = false;
 	
@@ -158,8 +162,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
 		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
 		
-		ivNetwork.setAdjustViewBounds(true);
-		ivNetwork.setMaxWidth(metrics.widthPixels/16);
+		gvAppIconDimension = new Point(gvAppCellDimension.y / 3, gvAppCellDimension.y / 3);
+		gvShowAppDimension = new Point(gvShowAppCellDimension.y / 2, gvShowAppCellDimension.y / 2);
+		
+//		ivNetwork.setAdjustViewBounds(true);
+//		ivNetwork.setMaxWidth(ivNetwork.getHeight());
 		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
 		
@@ -206,7 +213,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		        ResolveInfo resInfo = manager.resolveActivity(info.intent, 0);
 		        
 		        if (resInfo != null) {
-					info.icon = resInfo.loadIcon(manager);
+					info.icon = scaleIcon(resInfo.loadIcon(manager), gvShowAppDimension);
 					info.title = resInfo.loadLabel(manager);
 					if (favoriteSet.add(info)) {
 						favoriteAppAdapter.add(info);	
@@ -288,7 +295,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 					if (launchIntent != null && appInfo != null) { 
 						ApplicationInfo info = new ApplicationInfo();
 						info.title = appInfo.loadLabel(pm);
-						info.icon = appInfo.loadIcon(pm);
+						info.icon = scaleIcon(appInfo.loadIcon(pm), gvAppIconDimension) ;
 						info.intent = launchIntent;
 						allAppAdapter.add(info);
 					}
@@ -367,7 +374,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		}else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
 			ivNetwork.setImageResource(R.drawable.wifi);
 		}else{
-			ivNetwork.setImageResource(R.drawable.mobile);
+			ivNetwork.setImageResource(R.drawable.ethernet);
 		}
 	}
 
@@ -425,7 +432,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
                         info.activityInfo.name),
                         Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                application.icon = info.activityInfo.loadIcon(manager);
+                application.icon = scaleIcon(info.loadIcon(manager), gvAppIconDimension) ;
 
                 allAppAdapter.add(application);
             }
@@ -658,5 +665,20 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		super.onCreateContextMenu(menu, v, menuInfo);
 	    super.onCreateContextMenu(menu, v, menuInfo);
 	    getMenuInflater().inflate(R.menu.main, menu);
+	}
+	
+	private Drawable scaleIcon(Drawable image, Point dimen){
+	
+	    if ((image == null) || !(image instanceof BitmapDrawable)) {
+	        return image;
+	    }
+
+	    Bitmap b = ((BitmapDrawable)image).getBitmap();
+
+	    Bitmap bitmapResized = Bitmap.createScaledBitmap(b, dimen.x, dimen.y, false);
+
+	    image = new BitmapDrawable(getResources(), bitmapResized);
+
+	    return image;
 	}
 }
