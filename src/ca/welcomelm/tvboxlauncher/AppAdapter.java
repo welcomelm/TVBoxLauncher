@@ -29,12 +29,14 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 	private Context context;
 	private int resID;
 	private Point dimension;
+	private Typeface tf;
 
-	public AppAdapter(Context context, int resID, Point dimension) {
+	public AppAdapter(Context context, int resID, Point dimension, Typeface tf) {
 		super(context, 0);
 		this.context = context;
 		this.resID = resID;
 		this.dimension = dimension;
+		this.tf = tf;
 	}
 
 	@Override
@@ -57,6 +59,7 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 			tv.setText(appInfo.title);
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
 			tv.setPadding(0, dimension.x/15, 0, dimension.x/30);
+			tv.setTypeface(tf);
 			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);
 			return ll;
 //		}

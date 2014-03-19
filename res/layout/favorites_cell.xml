@@ -9,6 +9,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal|bottom"
         android:background="@drawable/app_big_background"
+        android:singleLine="true"
         android:ellipsize="marquee"/>
 
 </LinearLayout>

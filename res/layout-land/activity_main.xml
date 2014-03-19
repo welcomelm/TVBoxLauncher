@@ -50,8 +50,7 @@
 			    android:layout_gravity="right"
 			    android:src="@drawable/menu_button"
 			    android:background="@android:color/transparent"
-			    android:scaleType="fitEnd"
-			    android:onClick="showPopup"/>
+			    android:scaleType="fitEnd"/>
 
         </LinearLayout>
         
