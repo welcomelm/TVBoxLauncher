@@ -19,5 +19,11 @@
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowActionBar">false</item>
     </style>
+    
+    <style name="PopupAnimation" parent="android:Animation" mce_bogus="1">         
+        <item name="android:windowEnterAnimation">@anim/popup_fadein</item>    
+        <item name="android:windowExitAnimation">@anim/popup_fadeout</item>    
+    </style>    
+
 
 </resources>

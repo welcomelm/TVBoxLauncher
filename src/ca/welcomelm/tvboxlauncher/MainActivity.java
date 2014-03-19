@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
-
 import android.app.Activity;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
@@ -27,24 +26,20 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Gravity;
+import android.view.Menu;
+import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.WindowManager;
@@ -134,6 +129,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		menu.setContentView(LinearLayout.inflate(this, R.layout.menu, null));
 		menu.setFocusable(true);
 		menu.setOutsideTouchable(true);
+		menu.setBackgroundDrawable(getResources().getDrawable(R.drawable.app_big_background));
+		menu.setAnimationStyle(R.style.PopupAnimation);
 	}
 
 	private void startSplash() {
@@ -397,7 +394,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvApp.setOnItemClickListener(this);
 		gvApp.setOnItemLongClickListener(this);
 		btnMenu.setOnFocusChangeListener(this);
-		registerForContextMenu(btnMenu);
 	}
 
 	private void findViews() {
@@ -457,46 +453,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		openContextMenu(btnMenu);
+		this.menu.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP, 100, 20);
 		return false;
 	}
 	
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-
-        // Close the menu
-        if (Intent.ACTION_MAIN.equals(intent.getAction())) {
-            getWindow().closeAllPanels();
-        }
-    }
-	
-	public void showPopup(View v) {
-		menu.showAsDropDown(v);
-	}
-	
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-        switch (item.getItemId()) {
-        case R.id.menuItemAllApp:
-        	gvShowApp.setVisibility(GridView.VISIBLE);
-        	gvApp.setVisibility(GridView.INVISIBLE);
-            return true;
-        case R.id.menuItemSettings:
-        	Intent settings = new Intent(Settings.ACTION_SETTINGS);
-        	startActivity(settings);
-        	return true;
-        case R.id.menuItemWallpaper:
-            Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
-            startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
-        	return true;
-    }
-		return super.onContextItemSelected(item);
-	}
-	
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+/*
+public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menuItemAllApp:
             	gvShowApp.setVisibility(GridView.VISIBLE);
@@ -514,6 +476,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
         return super.onOptionsItemSelected(item);
     }
+ */
+	
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        // Close the menu
+        if (Intent.ACTION_MAIN.equals(intent.getAction())) {
+            getWindow().closeAllPanels();
+        }
+    }
+	
+	public void showPopup(View v) {
+		menu.showAtLocation(llMain, Gravity.RIGHT | Gravity.TOP, 100, 20);
+	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position,
@@ -557,7 +534,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		gvApp.setVisibility(GridView.VISIBLE);
 		gvShowApp.setVisibility(GridView.INVISIBLE);
-		menu.dismiss();
 	}
 
 	@Override
