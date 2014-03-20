@@ -34,8 +34,7 @@
 	            android:layout_height="fill_parent"
 	            android:layout_gravity="left"
 	            android:gravity="bottom"
-	            android:textAppearance="@android:style/TextAppearance.Holo.DialogWindowTitle"
-	            android:textColor="@android:color/black"/>
+				style="@style/TextField"/>
             
      	</LinearLayout>
         

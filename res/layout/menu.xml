@@ -19,12 +19,12 @@
 	    android:gravity="center"
 	    style="?android:attr/borderlessButtonStyle"
 	    android:background="@drawable/popup_menu_button"
-	   	android:textSize="12sp"
-	   	android:padding="5dp"
+	   	android:typeface="monospace"
 	    android:text="APPS"/>
 	
-	<TextView android:layout_width="fill_parent"
-	    android:layout_height="10dp"/>
+	<TextView android:id="@+id/tvMenuSpace1"
+	    android:layout_height="wrap_content"
+	    android:layout_width="fill_parent"/>
 	
 	<Button android:id="@+id/menuBtnWallpaper"
 	    android:layout_width="fill_parent"
@@ -33,12 +33,12 @@
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
 	    style="?android:attr/borderlessButtonStyle"
-	    android:textSize="12sp"
-	    android:padding="5dp"
+	   	android:typeface="monospace"
 	    android:text="WALLPAPAER"/>
 	
-	<TextView android:layout_width="fill_parent"
-	    android:layout_height="10dp"/>	
+	<TextView android:id="@+id/tvMenuSpace2"
+	    android:layout_height="wrap_content"
+	    android:layout_width="fill_parent"/>	
 
 	<Button android:id="@+id/menuBtnSettings" 
 	    android:layout_width="fill_parent"
@@ -47,9 +47,21 @@
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
 	    style="?android:attr/borderlessButtonStyle"
-	    android:textSize="12sp"
-	    android:padding="5dp"
+	   	android:typeface="monospace"
 	    android:text="SETTINGS"/>
+
+	<TextView android:layout_height="10dp"
+	    android:layout_width="fill_parent"/>
+	
+	<Button android:id="@+id/menuBtnTest" 
+	    android:layout_width="fill_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="1"
+	    android:gravity="center"
+	    android:background="@drawable/popup_menu_button"
+	    style="?android:attr/borderlessButtonStyle"
+	   	android:typeface="monospace"
+	    android:text="TEST"/>
 	
 	</LinearLayout>
     

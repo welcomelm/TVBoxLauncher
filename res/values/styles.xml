@@ -25,5 +25,13 @@
         <item name="android:windowExitAnimation">@anim/popup_fadeout</item>    
     </style>    
 
+    <style name="TextField">
+        <item name="android:typeface">monospace</item>
+    </style>
+    
+    <style name="PopupMenuButtonText" parent="@android:style/Widget.Holo.Button.Borderless">
+        <item name="android:typeface">monospace</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 
 </resources>
