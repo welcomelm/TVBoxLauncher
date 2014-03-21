@@ -29,14 +29,12 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 	private Context context;
 	private int resID;
 	private Point dimension;
-	private Typeface tf;
 
-	public AppAdapter(Context context, int resID, Point dimension, Typeface tf) {
+	public AppAdapter(Context context, int resID, Point dimension) {
 		super(context, 0);
 		this.context = context;
 		this.resID = resID;
 		this.dimension = dimension;
-		this.tf = tf;
 	}
 
 	@Override
@@ -52,17 +50,27 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 		
 		ApplicationInfo appInfo = getItem(position);
 		
-//		if (ll.findViewById(R.id.ivAppIcon) == null) {
-			TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);
-			tv.setWidth(dimension.x);
-			tv.setHeight(dimension.y);
+		TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);
+		tv.setWidth(dimension.x);
+		tv.setHeight(dimension.y);
+		
+		switch (resID) {
+		case R.layout.app_cell:
 			tv.setText(appInfo.title);
+			tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
-			tv.setPadding(0, dimension.x/15, 0, dimension.x/30);
-			tv.setTypeface(tf);
+			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);			
+			break;
+
+		case R.layout.favorites_cell:
+			tv.setPadding(0, dimension.x/10, 0, dimension.x/10);
 			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);
-			return ll;
-//		}
+			break;
+			
+		default:
+			break;
+		}
+		return ll;
 		
 //		ImageView iv = (ImageView)ll.findViewById(R.id.ivAppIcon);
 //		TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);

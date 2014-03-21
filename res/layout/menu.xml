@@ -6,7 +6,8 @@
     android:gravity="center"
     android:layout_gravity="center">
     
-    <LinearLayout android:layout_width="wrap_content"
+    <LinearLayout android:id="@+id/llPopupButtons"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
@@ -17,14 +18,13 @@
 	    android:layout_height="0dp"
 	    android:layout_weight="1"
 	    android:gravity="center"
-	    style="?android:attr/borderlessButtonStyle"
 	    android:background="@drawable/popup_menu_button"
-	   	android:typeface="monospace"
+		style="@style/PopupMenuButtonText"
 	    android:text="APPS"/>
 	
-	<TextView android:id="@+id/tvMenuSpace1"
-	    android:layout_height="wrap_content"
-	    android:layout_width="fill_parent"/>
+	<TextView android:layout_height="0dp"
+	    android:layout_width="fill_parent"
+	    android:layout_weight="0.2"/>
 	
 	<Button android:id="@+id/menuBtnWallpaper"
 	    android:layout_width="fill_parent"
@@ -32,13 +32,12 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
-	    style="?android:attr/borderlessButtonStyle"
-	   	android:typeface="monospace"
+		style="@style/PopupMenuButtonText"
 	    android:text="WALLPAPAER"/>
 	
-	<TextView android:id="@+id/tvMenuSpace2"
-	    android:layout_height="wrap_content"
-	    android:layout_width="fill_parent"/>	
+	<TextView android:layout_height="0dp"
+	    android:layout_width="fill_parent"
+	    android:layout_weight="0.2"/>	
 
 	<Button android:id="@+id/menuBtnSettings" 
 	    android:layout_width="fill_parent"
@@ -46,12 +45,12 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
-	    style="?android:attr/borderlessButtonStyle"
-	   	android:typeface="monospace"
+	   	style="@style/PopupMenuButtonText"
 	    android:text="SETTINGS"/>
 
-	<TextView android:layout_height="10dp"
-	    android:layout_width="fill_parent"/>
+	<TextView android:layout_height="0dp"
+	    android:layout_width="fill_parent"
+	    android:layout_weight="0.2"/>
 	
 	<Button android:id="@+id/menuBtnTest" 
 	    android:layout_width="fill_parent"
@@ -59,8 +58,8 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
-	    style="?android:attr/borderlessButtonStyle"
-	   	android:typeface="monospace"
+	    style="@style/PopupMenuButtonText"
+	    android:onClick="onClick"
 	    android:text="TEST"/>
 	
 	</LinearLayout>

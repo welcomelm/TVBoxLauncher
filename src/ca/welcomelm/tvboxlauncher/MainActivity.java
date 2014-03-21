@@ -92,17 +92,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings;
 	
-	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu;
+	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, llPopupButtons;
 	
 	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppDimension;
 	
 	private PopupWindow menu;
 	
-	private Typeface appTypeface;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		startSplash();
+		//startSplash();
 		
 		super.onCreate(savedInstanceState);
 		
@@ -122,7 +120,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		registerIntentReceivers();
 		
-		setDefaultWallpaper();
+//		setDefaultWallpaper();
 		
 		bindListeners();
 		
@@ -131,16 +129,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		loadApplications();
 		
 		loadAnimations();	
-
 	}
 	
 	private void setFonts() {
 		// TODO Auto-generated method stub
-		appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
-		menuBtnApps.setTypeface(appTypeface);
-		menuBtnWallpaper.setTypeface(appTypeface);
-		menuBtnSettings.setTypeface(appTypeface);
-		tvTime.setTypeface(appTypeface);
+		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
 	}
 
 	private void popupInit() {
@@ -173,16 +166,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		System.out.println(metrics.toString());
-		
-		int gvAppColumnWidth = metrics.widthPixels / 4;
-		int gvShowAppColumnWidth = metrics.widthPixels / 6;
 
-		gvApp.setColumnWidth(gvAppColumnWidth);
+		gvApp.setColumnWidth(metrics.widthPixels / 4);
 		
-		gvShowApp.setColumnWidth(gvShowAppColumnWidth);
+		gvShowApp.setColumnWidth(metrics.widthPixels / 6);
 		
-		gvAppCellDimension = new Point(gvAppColumnWidth, (int) (metrics.heightPixels / 3.5));
-		gvShowAppCellDimension = new Point(gvShowAppColumnWidth, metrics.heightPixels / 4);
+		gvAppCellDimension = new Point(metrics.widthPixels / 4, (int) (metrics.heightPixels / 3.5));
+		gvShowAppCellDimension = new Point(metrics.widthPixels / 6, metrics.heightPixels / 4);
 		
 		gvApp.setPadding(metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32);
 		gvApp.setVerticalSpacing(metrics.widthPixels/16);
@@ -191,22 +181,29 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
 		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
 		
-		gvAppIconDimension = new Point(gvAppCellDimension.y / 3, gvAppCellDimension.y / 3);
-		gvShowAppDimension = new Point(gvShowAppCellDimension.y / 2, gvShowAppCellDimension.y / 2);
-		
-//		ivNetwork.setAdjustViewBounds(true);
-//		ivNetwork.setMaxWidth(ivNetwork.getHeight());
+		gvAppIconDimension = new Point(gvAppCellDimension.y / 2, gvAppCellDimension.y / 2);
+		gvShowAppDimension = new Point(gvShowAppCellDimension.y * 4 / 5 , gvShowAppCellDimension.y * 4 / 5);
 		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
+		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
 		
 		llBtnMenu.setPadding(0, 0, metrics.widthPixels/128, 0);
 		
 		llNetAndTime.setPadding(metrics.widthPixels/128, 0, 0, 0);
+		
+		menuBtnApps.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		menuBtnSettings.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		menuBtnWallpaper.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		
+		menuBtnApps.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		menuBtnSettings.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		menuBtnWallpaper.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		
+		llPopupButtons.getLayoutParams().height = metrics.heightPixels *2 / 3;
 	}
 
 	private void setDefaultWallpaper() {
 		// TODO Auto-generated method stub
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
 		try {
 			WallpaperManager.getInstance(this).suggestDesiredDimensions(1280, 720);
 			WallpaperManager.getInstance(this).setResource(R.drawable.default_wallpaper);
@@ -220,7 +217,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		PackageManager manager = getPackageManager();
 		
-		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell, gvAppCellDimension, appTypeface);
+		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell, gvAppCellDimension);
 		favoriteSet = new HashSet<ApplicationInfo>();
         favoriteAppAdapter.clear();
         
@@ -272,7 +269,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		}
 		
 		tvTime.setText(df.format(date));
-		
 	}
 
 	private void registerIntentReceivers() {
@@ -292,21 +288,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         filter.addDataScheme("package");
         registerReceiver(appUpdateReceiver, filter);
         
-        wallpaperReceiver = new WallpaperReceiver();
-        filter = new IntentFilter(Intent.ACTION_WALLPAPER_CHANGED);
-        registerReceiver(wallpaperReceiver, filter);
+//        wallpaperReceiver = new WallpaperReceiver();
+//        filter = new IntentFilter(Intent.ACTION_WALLPAPER_CHANGED);
+//        registerReceiver(wallpaperReceiver, filter);
 	}
 
     /**
      * Receives intents from other applications to change the wallpaper.
      */
-    private class WallpaperReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-        	System.out.println("WallpaperReceiver");
-            getWindow().setBackgroundDrawable(WallpaperManager.getInstance(getApplicationContext()).peekDrawable());
-        }
-    }
+//    private class WallpaperReceiver extends BroadcastReceiver {
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//        	System.out.println("WallpaperReceiver");
+//            getWindow().setBackgroundDrawable(WallpaperManager.getInstance(getApplicationContext()).peekDrawable());
+//        }
+//    }
 	
     /**
      * Receives notifications when applications are added/removed.
@@ -445,11 +441,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		menuBtnWallpaper = (Button) llPopupMenu.findViewById(R.id.menuBtnWallpaper);
 		
+		llPopupButtons = (LinearLayout) llPopupMenu.findViewById(R.id.llPopupButtons);
 	}
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
-		allAppAdapter = new AppAdapter(this, R.layout.app_cell, gvShowAppCellDimension, appTypeface);
+		allAppAdapter = new AppAdapter(this, R.layout.app_cell, gvShowAppCellDimension);
         allAppAdapter.clear();
 		
         PackageManager manager = getPackageManager();
@@ -647,21 +644,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		unregisterReceiver(timeUpateReceiver);
 		unregisterReceiver(networkUpdateReceiver);
 		unregisterReceiver(appUpdateReceiver);
-		unregisterReceiver(wallpaperReceiver);
+//		unregisterReceiver(wallpaperReceiver);
 	}
 
 	@Override
 	public void onFocusChange(View v, boolean hasFocus) {
 		// TODO Auto-generated method stub
-	}
-	
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		// TODO Auto-generated method stub
-		super.onCreateContextMenu(menu, v, menuInfo);
-	    super.onCreateContextMenu(menu, v, menuInfo);
-	    getMenuInflater().inflate(R.menu.main, menu);
 	}
 	
 	private Drawable scaleIcon(Drawable image, Point dimen){
@@ -701,9 +689,25 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
             Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
             startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
 			break;
+		case R.id.menuBtnTest:
+			menu.dismiss();
+            Intent pickBackground = new Intent(Intent.ACTION_GET_CONTENT);
+            pickBackground.setType("file/*");
+            //pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+            Intent c = Intent.createChooser(pickBackground, "Select Background");
+            startActivityForResult(pickBackground, 0xdeadbeef);
+			break;
 		default:
 			break;
 		}
 		
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		System.out.println(requestCode + " " + resultCode);
+		System.out.println(data.getDataString());
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 }
