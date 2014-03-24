@@ -224,45 +224,47 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadFavorites() {
 		// TODO Auto-generated method stub
-		PackageManager manager = getPackageManager();
 		
-		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell, gvAppCellDimension);
-		favoriteSet = new HashSet<AppInfo>();
+		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
         favoriteAppAdapter.clear();
         
-		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
-		
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
+        FavoriteAppInfo.loadFavorites(this, favoriteAppAdapter, gvAppCellDimension);
         
-        try {
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(dir, FAVORITE_FILE))));
-			
-			String str;
-			
-			while((str = br.readLine()) != null){
-				Intent intent = setLauncherMainActivity(ComponentName.unflattenFromString(str), 
-						Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-		        ResolveInfo resInfo = manager.resolveActivity(intent, 0);
-		        
-		        if (resInfo != null) {
-		        	AppInfo info = new AppInfo(resInfo.loadLabel(manager), intent, 
-		        			scaleIcon(resInfo.loadIcon(manager), gvAppIconDimension));
-					if (favoriteSet.add(info)) {
-						favoriteAppAdapter.add(info);	
-					}
-				}
-			}
-			
-			br.close();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
+//        PackageManager manager = getPackageManager();
+//        
+//		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
+//		
+//		if (!dir.exists()) {
+//			dir.mkdirs();
+//		}
+//        
+//        try {
+//			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(dir, FAVORITE_FILE))));
+//			
+//			String str;
+//			
+//			while((str = br.readLine()) != null){
+//				Intent intent = setLauncherMainActivity(ComponentName.unflattenFromString(str), 
+//						Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+//		        ResolveInfo resInfo = manager.resolveActivity(intent, 0);
+//		        
+//		        if (resInfo != null) {
+//		        	AppInfo info = new AppInfo(resInfo.loadLabel(manager), intent, 
+//		        			scaleIcon(resInfo.loadIcon(manager), gvAppIconDimension));
+//					if (favoriteSet.add(info)) {
+//						favoriteAppAdapter.add(info);	
+//					}
+//				}
+//			}
+//			
+//			br.close();
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
         
         gvApp.setAdapter(favoriteAppAdapter);
         gvApp.setSelection(0);
@@ -320,23 +322,27 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         public void onReceive(Context context, Intent intent) {
         	if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) ||
         			intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {
-				String pkgName = intent.getData().getEncodedSchemeSpecificPart();
-				PackageManager pm = getPackageManager();
-				Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
-				try {
-					android.content.pm.ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
-					if (launchIntent != null && appInfo != null) { 
-						AppInfo info = new AppInfo(appInfo.loadLabel(pm), launchIntent,
-								scaleIcon(appInfo.loadIcon(pm), gvShowAppIconDimension));
-					}
-				} catch (NameNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				
+                allAppAdapter.clear();               
+                AppInfo.loadApplications(MainActivity.this, allAppAdapter, gvShowAppCellDimension);
+				
+//				PackageManager pm = getPackageManager();
+//				Intent launchIntent = pm.getLaunchIntentForPackage(pkgName);
+//				try {
+//					android.content.pm.ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
+//					if (launchIntent != null && appInfo != null) { 
+//						AppInfo info = new AppInfo(appInfo.loadLabel(pm), launchIntent,
+//								scaleIcon(appInfo.loadIcon(pm), gvShowAppIconDimension));
+//					}
+//				} catch (NameNotFoundException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
 			}
         	
         	if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
         		String pkgName = intent.getData().getEncodedSchemeSpecificPart();
+        		
         		for (int pos = 0; pos < allAppAdapter.getCount(); pos++) {
         			AppInfo info = allAppAdapter.getItem(pos);
         			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
@@ -345,11 +351,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 				}
 
         		for (int pos = 0; pos < favoriteAppAdapter.getCount(); pos++) {
-        			AppInfo info = favoriteAppAdapter.getItem(pos);
+        			FavoriteAppInfo info = (FavoriteAppInfo) favoriteAppAdapter.getItem(pos);
         			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
-        				favoriteSet.remove(info);
+        				info.removeMeFromFavorite(MainActivity.this);
         				favoriteAppAdapter.remove(info);
-        				removeFavorite(info);
 					}					
 				}
 			}
@@ -464,35 +469,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void loadApplications() {
 		// TODO Auto-generated method stub
-		allAppAdapter = new AppAdapter(this, R.layout.app_cell, gvShowAppCellDimension);
+		allAppAdapter = new AppAdapter(this, R.layout.app_cell);
         allAppAdapter.clear();
-		
-        PackageManager manager = getPackageManager();
-
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
-        Collections.sort(apps, new ResolveInfo.DisplayNameComparator(manager));
-
-        if (apps != null) {
-            final int count = apps.size();
-
-            for (int i = 0; i < count; i++) {
-                ResolveInfo info = apps.get(i);
-                
-                Intent intent = setLauncherMainActivity(new ComponentName(
-                        info.activityInfo.applicationInfo.packageName,
-                        info.activityInfo.name),
-                        Intent.FLAG_ACTIVITY_NEW_TASK
-                        | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                
-                AppInfo application = new AppInfo(info.loadLabel(manager) , intent,
-                		scaleIcon(info.loadIcon(manager), gvShowAppIconDimension));
-
-                allAppAdapter.add(application);
-            }
-        }
+        
+        AppInfo.loadApplications(this, allAppAdapter, gvShowAppCellDimension);
         
         gvShowApp.setAdapter(allAppAdapter);
         gvShowApp.setSelection(0);
@@ -563,16 +543,18 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
 		// TODO Auto-generated method stub
-		AppInfo info;
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
-			info = (AppInfo)parent.getItemAtPosition(position);
-			String addStr = getResources().getString(R.string.add_app);
-			Toast.makeText(this, info.getTitle() + " " + addStr, Toast.LENGTH_SHORT).show();
-			if (favoriteSet.add(info)) {
-				favoriteAppAdapter.add(info);
-				addFavorite(info);				
-			}
+			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
+			FavoriteAppInfo favoriteInfo = FavoriteAppInfo.from(info);
+			favoriteInfo.addMeToFavorite(this);
+			favoriteAppAdapter.add(favoriteInfo);
+//			String addStr = getResources().getString(R.string.add_app);
+//			Toast.makeText(this, info.getTitle() + " " + addStr, Toast.LENGTH_SHORT).show();
+//			if (favoriteSet.add(info)) {
+//				favoriteAppAdapter.add(info);
+//				addFavorite(info);				
+//			}
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;
@@ -725,14 +707,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.menuBtnExcute:
 			appPopupMenu.dismiss();
 			AppInfo info = favoriteAppAdapter.getItem(appPopIndex);
-			startActivity(info.getIntent());
+			info.excute(this);
 			break;
 		case R.id.menuBtnRemove:
 			appPopupMenu.dismiss();
-			info = favoriteAppAdapter.getItem(appPopIndex);
-			favoriteSet.remove(info);
-			favoriteAppAdapter.remove(info);
-			removeFavorite(info);
+			FavoriteAppInfo favoriteInfo = (FavoriteAppInfo) favoriteAppAdapter.getItem(appPopIndex);
+			favoriteInfo.removeMeFromFavorite(this);
+			favoriteAppAdapter.remove(favoriteInfo);
 			break;
 		case R.id.menuBtnChangeIcon:
 			appPopupMenu.dismiss();
@@ -759,20 +740,24 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		AppInfo info = favoriteAppAdapter.getItem(requestCode);
+		FavoriteAppInfo info = (FavoriteAppInfo) favoriteAppAdapter.getItem(requestCode);
 		
-		try {
-			Drawable customIcon = Drawable.createFromStream(getContentResolver().openInputStream(data.getData()), 
-					data.getDataString());
-			if (customIcon != null) {
-				info.setCustomIcon(customIcon);
-				info.setState(AppInfo.USE_CUSTOM_ICON);
-				favoriteAppAdapter.notifyDataSetChanged();
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		info.changeCustomIcon(MainActivity.this , data.getData());
+		
+		favoriteAppAdapter.notifyDataSetChanged();
+		
+//		try {
+//			Drawable customIcon = Drawable.createFromStream(getContentResolver().openInputStream(data.getData()), 
+//					data.getDataString());
+//			if (customIcon != null) {
+//				info.setCustomIcon(customIcon);
+//				info.setState(AppInfo.USE_CUSTOM_ICON);
+//				favoriteAppAdapter.notifyDataSetChanged();
+//			}
+//		} catch (FileNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		super.onActivityResult(requestCode, resultCode, data);
 		
 	}

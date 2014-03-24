@@ -1,8 +1,13 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.util.Collections;
+import java.util.List;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
@@ -26,13 +31,20 @@ public class AppInfo {
      * The application icon.
      */
 	protected Drawable icon;
+	
+	protected Point dimension;
+	
+	public AppInfo(AppInfo info){
+		this(info.title, info.intent.getComponent(), info.icon, info.dimension);
+	}
     
-    public AppInfo(CharSequence title, ComponentName componentName, Drawable icon) {
+    protected AppInfo(CharSequence title, ComponentName componentName, Drawable icon, Point dimension) {
 		super();
 		this.title = title;
 		this.intent = setLauncherMainActivity(componentName, 
 				Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 		this.icon = icon;
+		this.dimension = dimension;
 	}
     
 	public void scaleIcon(Context context , Point dimen){
@@ -62,7 +74,7 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(TextView tv , Point dimension){
+    public void SetMeOnTextView(TextView tv){
     	tv.setWidth(dimension.x);
 		tv.setHeight(dimension.y);
 		tv.setText(title);
@@ -126,4 +138,38 @@ public class AppInfo {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
+
+	public static void loadApplications(Context context, AppAdapter adapter, Point dimension) {
+		// TODO Auto-generated method stub
+        PackageManager manager = context.getPackageManager();
+
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        final List<ResolveInfo> apps = manager.queryIntentActivities(mainIntent, 0);
+        Collections.sort(apps, new ResolveInfo.DisplayNameComparator(manager));
+
+        if (apps != null) {
+            final int count = apps.size();
+
+            for (int i = 0; i < count; i++) {
+                ResolveInfo info = apps.get(i);
+                
+                AppInfo application = new AppInfo(info.loadLabel(manager) ,
+                		new ComponentName(info.activityInfo.applicationInfo.packageName, 
+                				info.activityInfo.name), 
+                				info.loadIcon(manager),
+                				dimension);
+                
+                application.scaleIcon(context, new Point(dimension.y / 2, dimension.y / 2));
+
+                adapter.add(application);
+            }
+        }
+	}
+
+	public void excute(Context context) {
+		// TODO Auto-generated method stub
+		context.startActivity(intent);
+	}
 }
