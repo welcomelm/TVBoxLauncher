@@ -24,7 +24,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
+public class AppAdapter extends ArrayAdapter<AppInfo> {
 
 	private Context context;
 	private int resID;
@@ -48,23 +48,41 @@ public class AppAdapter extends ArrayAdapter<ApplicationInfo> {
 			ll = (LinearLayout) LayoutInflater.from(context).inflate(resID, parent, false);
 		}		
 		
-		ApplicationInfo appInfo = getItem(position);
+		AppInfo appInfo = getItem(position);
 		
 		TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);
 		tv.setWidth(dimension.x);
 		tv.setHeight(dimension.y);
 		
 		switch (resID) {
-		case R.layout.app_cell:
-			tv.setText(appInfo.title);
-			tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
-			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
-			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);			
-			break;
-
-		case R.layout.favorites_cell:
-			tv.setPadding(0, dimension.x/10, 0, dimension.x/10);
-			tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.icon, null, null);
+			case R.layout.app_cell:
+				tv.setText(appInfo.getTitle());
+				tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
+				tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
+				tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.getIcon(), null, null);			
+				break;
+	
+			case R.layout.favorites_cell:
+				tv.setPadding(0, dimension.x/10, 0, dimension.x/10);
+				switch (appInfo.getState()) {
+				case AppInfo.USE_DEFAULT_ICON:
+					tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.getIcon(), null, null);
+					break;
+					
+				case AppInfo.USE_CUSTOM_ICON:
+					tv.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+					tv.setBackgroundDrawable(appInfo.getCustomIcon());
+					break;
+					
+				case AppInfo.USE_CUSTOM_BACKGROUND:
+					tv.setCompoundDrawablesWithIntrinsicBounds(null, appInfo.getIcon(), null, null);
+					tv.setBackgroundDrawable(appInfo.getBackground());
+					break;
+	
+				default:
+					break;
+				}
+			
 			break;
 			
 		default:

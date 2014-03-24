@@ -74,7 +74,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private AppAdapter favoriteAppAdapter;
 	
 	//To prevent adding the same app to favorites
-	private HashSet<ApplicationInfo> favoriteSet;
+	private HashSet<AppInfo> favoriteSet;
 	
 	private Animation fade, scale;
 	
@@ -90,13 +90,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageButton btnMenu;
 	
-	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings;
+	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings, menuBtnExcute, menuBtnRemove, menuBtnChangeIcon, menuBtnChangeBackground;
 	
-	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, llPopupButtons;
+	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, llPopupButtons, llAppPopupButtons, llAppPopupMenu;
 	
-	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppDimension;
+	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppIconDimension;
 	
-	private PopupWindow menu;
+	private PopupWindow mainPopupMenu, appPopupMenu;
+
+	private int appPopIndex;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -138,12 +140,19 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 	private void popupInit() {
 		// TODO Auto-generated method stub
-		menu = new PopupWindow(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-		menu.setContentView(llPopupMenu);
-		menu.setFocusable(true);
-		menu.setOutsideTouchable(true);
-		menu.setBackgroundDrawable(new ColorDrawable(0xb0000000));
-		menu.setAnimationStyle(R.style.PopupAnimation);
+		mainPopupMenu = new PopupWindow(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		mainPopupMenu.setContentView(llPopupMenu);
+		mainPopupMenu.setFocusable(true);
+		mainPopupMenu.setOutsideTouchable(true);
+		mainPopupMenu.setBackgroundDrawable(new ColorDrawable(0xb0000000));
+		mainPopupMenu.setAnimationStyle(R.style.PopupAnimation);
+		
+		appPopupMenu = new PopupWindow(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
+		appPopupMenu.setContentView(llAppPopupMenu);
+		appPopupMenu.setFocusable(true);
+		appPopupMenu.setOutsideTouchable(true);
+		appPopupMenu.setBackgroundDrawable(new ColorDrawable(0xb0000000));
+		appPopupMenu.setAnimationStyle(R.style.PopupAnimation);
 	}
 
 	private void startSplash() {
@@ -181,8 +190,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
 		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
 		
-		gvAppIconDimension = new Point(gvAppCellDimension.y / 2, gvAppCellDimension.y / 2);
-		gvShowAppDimension = new Point(gvShowAppCellDimension.y * 4 / 5 , gvShowAppCellDimension.y * 4 / 5);
+		gvShowAppIconDimension = new Point(gvAppCellDimension.y / 2, gvAppCellDimension.y / 2);
+		gvAppIconDimension = new Point(gvShowAppCellDimension.y * 4 / 5 , gvShowAppCellDimension.y * 4 / 5);
 		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
@@ -199,7 +208,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		menuBtnSettings.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 		menuBtnWallpaper.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 		
-		llPopupButtons.getLayoutParams().height = metrics.heightPixels *2 / 3;
+		llPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
 	}
 
 	private void setDefaultWallpaper() {
@@ -218,7 +227,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		PackageManager manager = getPackageManager();
 		
 		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell, gvAppCellDimension);
-		favoriteSet = new HashSet<ApplicationInfo>();
+		favoriteSet = new HashSet<AppInfo>();
         favoriteAppAdapter.clear();
         
 		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
@@ -233,14 +242,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			String str;
 			
 			while((str = br.readLine()) != null){
-				ApplicationInfo info = new ApplicationInfo();
-				info.setActivity(ComponentName.unflattenFromString(str), 
+				Intent intent = setLauncherMainActivity(ComponentName.unflattenFromString(str), 
 						Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-		        ResolveInfo resInfo = manager.resolveActivity(info.intent, 0);
+		        ResolveInfo resInfo = manager.resolveActivity(intent, 0);
 		        
 		        if (resInfo != null) {
-					info.icon = scaleIcon(resInfo.loadIcon(manager), gvShowAppDimension);
-					info.title = resInfo.loadLabel(manager);
+		        	AppInfo info = new AppInfo(resInfo.loadLabel(manager), intent, 
+		        			scaleIcon(resInfo.loadIcon(manager), gvAppIconDimension));
 					if (favoriteSet.add(info)) {
 						favoriteAppAdapter.add(info);	
 					}
@@ -318,11 +326,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 				try {
 					android.content.pm.ApplicationInfo appInfo = pm.getApplicationInfo(pkgName, 0);
 					if (launchIntent != null && appInfo != null) { 
-						ApplicationInfo info = new ApplicationInfo();
-						info.title = appInfo.loadLabel(pm);
-						info.icon = scaleIcon(appInfo.loadIcon(pm), gvAppIconDimension) ;
-						info.intent = launchIntent;
-						allAppAdapter.add(info);
+						AppInfo info = new AppInfo(appInfo.loadLabel(pm), launchIntent,
+								scaleIcon(appInfo.loadIcon(pm), gvShowAppIconDimension));
 					}
 				} catch (NameNotFoundException e) {
 					// TODO Auto-generated catch block
@@ -333,15 +338,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         	if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
         		String pkgName = intent.getData().getEncodedSchemeSpecificPart();
         		for (int pos = 0; pos < allAppAdapter.getCount(); pos++) {
-        			ApplicationInfo info = allAppAdapter.getItem(pos);
-        			if (info.intent.getComponent().getPackageName().equals(pkgName)) {
+        			AppInfo info = allAppAdapter.getItem(pos);
+        			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
         				allAppAdapter.remove(info);
 					}					
 				}
 
         		for (int pos = 0; pos < favoriteAppAdapter.getCount(); pos++) {
-        			ApplicationInfo info = favoriteAppAdapter.getItem(pos);
-        			if (info.intent.getComponent().getPackageName().equals(pkgName)) {
+        			AppInfo info = favoriteAppAdapter.getItem(pos);
+        			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
         				favoriteSet.remove(info);
         				favoriteAppAdapter.remove(info);
         				removeFavorite(info);
@@ -414,6 +419,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		menuBtnApps.setOnClickListener(this);
 		menuBtnSettings.setOnClickListener(this);
 		menuBtnWallpaper.setOnClickListener(this);
+		menuBtnExcute.setOnClickListener(this);
+		menuBtnRemove.setOnClickListener(this);
+		menuBtnChangeIcon.setOnClickListener(this);
+		menuBtnChangeBackground.setOnClickListener(this);
 	}
 
 	private void findViews() {
@@ -433,7 +442,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		llMain = (LinearLayout) findViewById(R.id.llMain);
 		
-		llPopupMenu = (LinearLayout) LinearLayout.inflate(this, R.layout.menu, null);
+		llPopupMenu = (LinearLayout) LinearLayout.inflate(this, R.layout.main_popup_menu, null);
 		
 		menuBtnApps = (Button) llPopupMenu.findViewById(R.id.menuBtnApps);
 		
@@ -442,6 +451,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		menuBtnWallpaper = (Button) llPopupMenu.findViewById(R.id.menuBtnWallpaper);
 		
 		llPopupButtons = (LinearLayout) llPopupMenu.findViewById(R.id.llPopupButtons);
+		
+		llAppPopupMenu = (LinearLayout) LinearLayout.inflate(this, R.layout.app_popup_menu, null);
+		
+		llAppPopupButtons = (LinearLayout) llAppPopupMenu.findViewById(R.id.llAppPopupButtons);
+		
+		menuBtnExcute = (Button) llAppPopupMenu.findViewById(R.id.menuBtnExcute);
+		menuBtnRemove = (Button) llAppPopupMenu.findViewById(R.id.menuBtnRemove);
+		menuBtnChangeIcon = (Button) llAppPopupMenu.findViewById(R.id.menuBtnChangeIcon);
+		menuBtnChangeBackground = (Button) llAppPopupMenu.findViewById(R.id.menuBtnChangeBackground);
 	}
 
 	private void loadApplications() {
@@ -461,16 +479,16 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
             final int count = apps.size();
 
             for (int i = 0; i < count; i++) {
-                ApplicationInfo application = new ApplicationInfo();
                 ResolveInfo info = apps.get(i);
-
-                application.title = info.loadLabel(manager);
-                application.setActivity(new ComponentName(
+                
+                Intent intent = setLauncherMainActivity(new ComponentName(
                         info.activityInfo.applicationInfo.packageName,
                         info.activityInfo.name),
                         Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-                application.icon = scaleIcon(info.loadIcon(manager), gvAppIconDimension) ;
+                
+                AppInfo application = new AppInfo(info.loadLabel(manager) , intent,
+                		scaleIcon(info.loadIcon(manager), gvShowAppIconDimension));
 
                 allAppAdapter.add(application);
             }
@@ -483,7 +501,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
-		this.menu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
+		mainPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
 		return false;
 	}
 	
@@ -527,8 +545,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			@Override
 			public void onAnimationEnd(Animation animation) {
 				// TODO Auto-generated method stub
-				ApplicationInfo info = (ApplicationInfo)av.getItemAtPosition(pos);
-				startActivity(info.intent);					
+				AppInfo info = (AppInfo)av.getItemAtPosition(pos);
+				startActivity(info.getIntent());					
 			}
 		});
 		view.startAnimation(anim);
@@ -545,29 +563,31 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	public boolean onItemLongClick(AdapterView<?> parent, View view,
 			int position, long id) {
 		// TODO Auto-generated method stub
-		ApplicationInfo info;
+		AppInfo info;
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
-			info = (ApplicationInfo)parent.getItemAtPosition(position);
+			info = (AppInfo)parent.getItemAtPosition(position);
 			String addStr = getResources().getString(R.string.add_app);
-			Toast.makeText(this, info.title + " " + addStr, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, info.getTitle() + " " + addStr, Toast.LENGTH_SHORT).show();
 			if (favoriteSet.add(info)) {
 				favoriteAppAdapter.add(info);
 				addFavorite(info);				
 			}
 			return true;
 		case R.id.gvApp:
-			info = (ApplicationInfo)parent.getItemAtPosition(position);
-			favoriteSet.remove(info);
-			favoriteAppAdapter.remove(info);
-			removeFavorite(info);
+			appPopIndex = position;
+			appPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
+//			info = (ApplicationInfo)parent.getItemAtPosition(position);
+//			favoriteSet.remove(info);
+//			favoriteAppAdapter.remove(info);
+//			removeFavorite(info);
 			return true;
 		default:
 			return false;
 		}
 	}
 	
-	private void removeFavorite(ApplicationInfo info) {
+	private void removeFavorite(AppInfo info) {
 		// TODO Auto-generated method stub
 		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
 		
@@ -590,7 +610,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 					break;
 				}
 				
-				if(str.equals(info.intent.getComponent().flattenToString())){
+				if(str.equals(info.getIntent().getComponent().flattenToString())){
 					continue;
 				}
 				
@@ -614,7 +634,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		}	
 	}
 
-	private void addFavorite(ApplicationInfo info) {
+	private void addFavorite(AppInfo info) {
 		// TODO Auto-generated method stub
 		File dir = new File(Environment.getExternalStorageDirectory(), getApplicationInfo().packageName);
 		
@@ -624,7 +644,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 		try {
 			OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(new File(dir, FAVORITE_FILE), true));
-			osw.append(info.intent.getComponent().flattenToString());
+			osw.append(info.getIntent().getComponent().flattenToString());
 			osw.append(System.getProperty("line.separator"));		
 			osw.flush();
 			osw.close();
@@ -672,30 +692,63 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		switch (v.getId()) {
 		case R.id.btnMenu:
-			menu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
+			mainPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
 			break;
 		case R.id.menuBtnApps:
-			menu.dismiss();
+			mainPopupMenu.dismiss();
         	gvShowApp.setVisibility(GridView.VISIBLE);
         	gvApp.setVisibility(GridView.INVISIBLE);
 			break;
 		case R.id.menuBtnSettings:
-			menu.dismiss();
+			mainPopupMenu.dismiss();
         	Intent settings = new Intent(Settings.ACTION_SETTINGS);
         	startActivity(settings);
 			break;
 		case R.id.menuBtnWallpaper:
-			menu.dismiss();
+			mainPopupMenu.dismiss();
             Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
             startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
 			break;
 		case R.id.menuBtnTest:
-			menu.dismiss();
+			mainPopupMenu.dismiss();
+//            Intent pickBackground = new Intent(Intent.ACTION_GET_CONTENT);
+//            pickBackground.setType("image/*");
+//            pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+//            PackageManager manager = getPackageManager();
+//            List<ResolveInfo> infos = manager.queryIntentActivities(pickBackground, 0);
+//            if (infos.size() > 0) {
+//            	startActivityForResult(pickBackground, 0xbeef);
+//			}else {
+//				Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
+//			}
+			break;
+		case R.id.menuBtnExcute:
+			appPopupMenu.dismiss();
+			AppInfo info = favoriteAppAdapter.getItem(appPopIndex);
+			startActivity(info.getIntent());
+			break;
+		case R.id.menuBtnRemove:
+			appPopupMenu.dismiss();
+			info = favoriteAppAdapter.getItem(appPopIndex);
+			favoriteSet.remove(info);
+			favoriteAppAdapter.remove(info);
+			removeFavorite(info);
+			break;
+		case R.id.menuBtnChangeIcon:
+			appPopupMenu.dismiss();
             Intent pickBackground = new Intent(Intent.ACTION_GET_CONTENT);
-            pickBackground.setType("file/*");
-            //pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-            Intent c = Intent.createChooser(pickBackground, "Select Background");
-            startActivityForResult(pickBackground, 0xdeadbeef);
+            pickBackground.setType("image/*");
+            pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+            PackageManager manager = getPackageManager();
+            List<ResolveInfo> infos = manager.queryIntentActivities(pickBackground, 0);
+            if (infos.size() > 0) {
+            	startActivityForResult(pickBackground, appPopIndex);
+			}else {
+				Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
+			}			
+			break;
+		case R.id.menuBtnChangeBackground:
+			appPopupMenu.dismiss();
 			break;
 		default:
 			break;
@@ -706,8 +759,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		System.out.println(requestCode + " " + resultCode);
-		System.out.println(data.getDataString());
+		AppInfo info = favoriteAppAdapter.getItem(requestCode);
+		
+		try {
+			Drawable customIcon = Drawable.createFromStream(getContentResolver().openInputStream(data.getData()), 
+					data.getDataString());
+			if (customIcon != null) {
+				info.setCustomIcon(customIcon);
+				info.setState(AppInfo.USE_CUSTOM_ICON);
+				favoriteAppAdapter.notifyDataSetChanged();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		super.onActivityResult(requestCode, resultCode, data);
+		
 	}
 }
