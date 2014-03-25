@@ -226,7 +226,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		
 		favoriteAppAdapter = new AppAdapter(this, R.layout.favorites_cell);
-        favoriteAppAdapter.clear();
         
         FavoriteAppInfo.loadFavorites(this, favoriteAppAdapter, gvAppCellDimension);
         
@@ -470,7 +469,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private void loadApplications() {
 		// TODO Auto-generated method stub
 		allAppAdapter = new AppAdapter(this, R.layout.app_cell);
-        allAppAdapter.clear();
         
         AppInfo.loadApplications(this, allAppAdapter, gvShowAppCellDimension);
         
@@ -548,7 +546,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
 			FavoriteAppInfo favoriteInfo = FavoriteAppInfo.from(info);
 			favoriteInfo.addMeToFavorite(this);
-			favoriteAppAdapter.add(favoriteInfo);
+			FavoriteAppInfo.loadFavorites(this, favoriteAppAdapter, gvAppCellDimension);
 //			String addStr = getResources().getString(R.string.add_app);
 //			Toast.makeText(this, info.getTitle() + " " + addStr, Toast.LENGTH_SHORT).show();
 //			if (favoriteSet.add(info)) {
@@ -723,7 +721,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
             PackageManager manager = getPackageManager();
             List<ResolveInfo> infos = manager.queryIntentActivities(pickBackground, 0);
             if (infos.size() > 0) {
-            	startActivityForResult(pickBackground, appPopIndex);
+            	startActivityForResult(pickBackground, 0xbeef);
 			}else {
 				Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
 			}			
@@ -740,7 +738,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		FavoriteAppInfo info = (FavoriteAppInfo) favoriteAppAdapter.getItem(requestCode);
+		FavoriteAppInfo info = (FavoriteAppInfo) favoriteAppAdapter.getItem(appPopIndex);
+		
+		System.out.println(requestCode + " " + data);
 		
 		info.changeCustomIcon(MainActivity.this , data.getData());
 		

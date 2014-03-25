@@ -1,12 +1,17 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.StreamCorruptedException;
 
@@ -30,7 +35,7 @@ public class FavoriteAppInfo extends AppInfo {
 	public String state;
 	public String backgroundUri;
 	public String customIconUri;
-	public String ComponentName;
+	public String componentName;
 	
 	protected Drawable background = null;
     
@@ -41,7 +46,7 @@ public class FavoriteAppInfo extends AppInfo {
 		this.state = USE_DEFAULT_ICON;
 		this.backgroundUri = null;
 		this.customIconUri = null;
-		this.ComponentName = componentName.flattenToString();
+		this.componentName = componentName.flattenToString();
 	}
     
     protected FavoriteAppInfo(AppInfo info) {
@@ -49,7 +54,7 @@ public class FavoriteAppInfo extends AppInfo {
 		this.state = USE_DEFAULT_ICON;
 		this.backgroundUri = null;
 		this.customIconUri = null;
-		this.ComponentName = intent.getComponent().flattenToString();
+		this.componentName = intent.getComponent().flattenToString();
 	}
     
     public static FavoriteAppInfo from (AppInfo info){
@@ -62,23 +67,15 @@ public class FavoriteAppInfo extends AppInfo {
     	tv.setWidth(dimension.x);
 		tv.setHeight(dimension.y);
 		tv.setPadding(0, dimension.x/10, 0, dimension.x/10);
-		switch (state) {
-			case USE_DEFAULT_ICON:
-				tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
-				break;
-				
-			case USE_CUSTOM_ICON:
-				tv.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
-				tv.setBackgroundDrawable(customIcon);
-				break;
-				
-			case USE_CUSTOM_BACKGROUND:
-				tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
-				tv.setBackgroundDrawable(background);
-				break;
-	
-			default:
-				break;
+		
+		if (state.equals(USE_DEFAULT_ICON)) {
+			tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
+		}else if (state.equals(USE_CUSTOM_ICON)) {
+			tv.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+			tv.setBackgroundDrawable(customIcon);
+		}else if (state.equals(USE_CUSTOM_BACKGROUND)) {
+			tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
+			tv.setBackgroundDrawable(background);
 		}
     }
 
@@ -97,14 +94,6 @@ public class FavoriteAppInfo extends AppInfo {
 	public void setCustomIcon(Drawable customIcon) {
 		this.customIcon = customIcon;
 	}
-
-	public int getState() {
-		return state;
-	}
-
-	public void setState(int state) {
-		this.state = state;
-	}
 	
 	public void addMeToFavorite(Context context) {
 		File dir = new File(Environment.getExternalStorageDirectory(), 
@@ -121,12 +110,21 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 		
 		try {
-			ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file, false));
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+			bw.write(componentName);
+			bw.newLine();
+			bw.write(state);
+			bw.newLine();
+			if (state.equals(USE_CUSTOM_ICON)) {
+				bw.write(customIconUri);
+				bw.newLine();
+			}else if (state.equals(USE_CUSTOM_BACKGROUND)) {
+				bw.write(backgroundUri);
+				bw.newLine();
+			}	
+			bw.flush();
+			bw.close();
 			
-			oos.writeObject(record);
-			
-			oos.flush();
-			oos.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -165,15 +163,17 @@ public class FavoriteAppInfo extends AppInfo {
 		
 		PackageManager manager = context.getPackageManager();
 		
+		adapter.clear();
+		
 		for(File file : files){
 			try {
-				ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 				
-				Record record = (Record) ois.readObject();
+				String componentName = br.readLine();
 				
 				Intent intent = new Intent(Intent.ACTION_MAIN);
 		        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-		        intent.setComponent(ComponentName.unflattenFromString(record.ComponentName));
+		        intent.setComponent(ComponentName.unflattenFromString(componentName));
 		        
 		        ResolveInfo info = manager.resolveActivity(intent, 0);
 		        
@@ -184,7 +184,18 @@ public class FavoriteAppInfo extends AppInfo {
 	                				info.loadIcon(manager),
 	                				dimension);
 	                
-	                application.setRecord(record);
+	                application.state = br.readLine();
+	                
+	                if (application.state.equals(USE_CUSTOM_ICON)) {
+	                	application.customIconUri = br.readLine();
+	                	application.changeCustomIcon(context, Uri.parse(application.customIconUri));
+					}else if (application.state.equals(USE_CUSTOM_BACKGROUND)) {
+						application.backgroundUri = br.readLine();
+					}
+	                
+	                br.close();
+	                
+	                application.componentName = componentName;
 	                
 	                application.scaleIcon(context, new Point(dimension.y * 4 / 5, dimension.y * 4 / 5));
 
@@ -198,9 +209,6 @@ public class FavoriteAppInfo extends AppInfo {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
