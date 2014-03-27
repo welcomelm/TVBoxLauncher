@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.TextView;
 
 public class AppInfo {
@@ -33,10 +34,6 @@ public class AppInfo {
 	protected Drawable icon;
 	
 	protected Point dimension;
-	
-	public AppInfo(AppInfo info){
-		this(info.title, info.intent.getComponent(), info.icon, info.dimension);
-	}
     
     protected AppInfo(CharSequence title, ComponentName componentName, Drawable icon, Point dimension) {
 		super();
@@ -74,13 +71,16 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(TextView tv){
-    	tv.setWidth(dimension.x);
-		tv.setHeight(dimension.y);
-		tv.setText(title);
-		tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
-		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
-		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
+    public void SetMeOnTextView(View view){
+    	if (view instanceof TextView) {
+			TextView tv = (TextView) view;
+	    	tv.setWidth(dimension.x);
+			tv.setHeight(dimension.y);
+			tv.setText(title);
+			tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
+			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
+			tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
+		}
     }
 
     public CharSequence getTitle() {
@@ -139,7 +139,7 @@ public class AppInfo {
         return result;
     }
 
-	public static void loadApplications(Context context, AppAdapter adapter, Point dimension) {
+	public static void loadApplications(Context context, AppAdapter<AppInfo> adapter, Point dimension) {
 		// TODO Auto-generated method stub
         PackageManager manager = context.getPackageManager();
 

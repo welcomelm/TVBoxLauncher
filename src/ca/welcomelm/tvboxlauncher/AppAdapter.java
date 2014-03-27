@@ -24,7 +24,7 @@ import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class AppAdapter extends ArrayAdapter<AppInfo> {
+public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 
 	private Context context;
 	private int resID;
@@ -48,9 +48,9 @@ public class AppAdapter extends ArrayAdapter<AppInfo> {
 		
 		AppInfo appInfo = getItem(position);
 		
-		TextView tv = (TextView)ll.findViewById(R.id.tvAppTitle);
+		View v = ll.findViewById(R.id.tvAppTitle);
 
-		appInfo.SetMeOnTextView(tv);
+		appInfo.SetMeOnTextView(v);
 		
 		return ll;
 	}
