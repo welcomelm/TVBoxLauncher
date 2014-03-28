@@ -34,6 +34,7 @@ import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -43,7 +44,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnFocusChangeListener, OnClickListener {
+public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	
 	private final String FAVORITE_FILE = "favorites.txt";
 	
@@ -72,11 +73,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, llPopupButtons, llAppPopupButtons, llAppPopupMenu;
 	
-	private Point gvAppCellDimension, gvShowAppCellDimension, gvAppIconDimension, gvShowAppIconDimension;
+	private Point gvAppCellDimension, gvShowAppCellDimension;
 	
 	private PopupWindow mainPopupMenu, appPopupMenu;
 
 	private int appPopIndex;
+	
+	private FavoriteAppInfo.FavoriteDatabase favoriteDatabase;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +93,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		setDimension();
 		
-		setFonts();
+		setMis();
 		
 		popupInit();
 		
@@ -109,9 +112,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		loadAnimations();	
 	}
 	
-	private void setFonts() {
+	private void setMis() {
 		// TODO Auto-generated method stub
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
+		favoriteDatabase = new FavoriteAppInfo.FavoriteDatabase(this);
+		FavoriteAppInfo.setDb(favoriteDatabase);
 	}
 
 	private void popupInit() {
@@ -151,40 +156,40 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		System.out.println(metrics.toString());
-
-		gvApp.setColumnWidth(metrics.widthPixels / 4);
-		
-		gvShowApp.setColumnWidth(metrics.widthPixels / 6);
 		
 		gvAppCellDimension = new Point(metrics.widthPixels / 4, (int) (metrics.heightPixels / 3.5));
 		gvShowAppCellDimension = new Point(metrics.widthPixels / 6, metrics.heightPixels / 4);
 		
+		gvApp.setColumnWidth(metrics.widthPixels / 4);
+		gvShowApp.setColumnWidth(metrics.widthPixels / 6);
 		gvApp.setPadding(metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32);
 		gvApp.setVerticalSpacing(metrics.widthPixels/16);
 		gvApp.setHorizontalSpacing(metrics.widthPixels/32);
-		
 		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
 		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
 		
-		gvShowAppIconDimension = new Point(gvAppCellDimension.y / 2, gvAppCellDimension.y / 2);
-		gvAppIconDimension = new Point(gvShowAppCellDimension.y * 4 / 5 , gvShowAppCellDimension.y * 4 / 5);
-		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
-		
-		llBtnMenu.setPadding(0, 0, metrics.widthPixels/128, 0);
-		
+		llBtnMenu.setPadding(0, 0, metrics.widthPixels/128, 0);		
 		llNetAndTime.setPadding(metrics.widthPixels/128, 0, 0, 0);
 		
+		llPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
 		menuBtnApps.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
 		menuBtnSettings.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnWallpaper.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		
+		menuBtnWallpaper.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);	
 		menuBtnApps.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 		menuBtnSettings.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 		menuBtnWallpaper.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 		
-		llPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
+		llAppPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
+		menuBtnExcute.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		menuBtnRemove.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		menuBtnChangeIcon.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
+		menuBtnChangeBackground.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);	
+		menuBtnExcute.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		menuBtnRemove.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		menuBtnChangeIcon.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
+		menuBtnChangeBackground.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 	}
 
 	private void loadFavorites() {
@@ -248,7 +253,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         		for (int pos = 0; pos < favoriteAppAdapter.getCount(); pos++) {
         			FavoriteAppInfo info = favoriteAppAdapter.getItem(pos);
         			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
-        				info.removeMeFromFavorite(MainActivity.this , favoriteAppAdapter, false);
+        				info.removeMeFromFavorite(favoriteAppAdapter, false);
 					}					
 				}
 			}
@@ -309,7 +314,21 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvShowApp.setOnItemLongClickListener(this);
 		gvApp.setOnItemClickListener(this);
 		gvApp.setOnItemLongClickListener(this);
-		btnMenu.setOnFocusChangeListener(this);
+		gvApp.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		btnMenu.setOnClickListener(this);
 		menuBtnApps.setOnClickListener(this);
 		menuBtnSettings.setOnClickListener(this);
@@ -430,7 +449,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.gvShowApp:
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
 			FavoriteAppInfo favoriteInfo = FavoriteAppInfo.from(info , gvAppCellDimension);
-			favoriteInfo.addMeToFavorite(this , favoriteAppAdapter , false);
+			favoriteInfo.addMeToFavorite(favoriteAppAdapter , false);
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;
@@ -448,11 +467,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		unregisterReceiver(timeUpateReceiver);
 		unregisterReceiver(networkUpdateReceiver);
 		unregisterReceiver(appUpdateReceiver);
-	}
-
-	@Override
-	public void onFocusChange(View v, boolean hasFocus) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
@@ -488,7 +502,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.menuBtnRemove:
 			appPopupMenu.dismiss();
 			FavoriteAppInfo favoriteInfo = favoriteAppAdapter.getItem(appPopIndex);
-			favoriteInfo.removeMeFromFavorite(this , favoriteAppAdapter , false);
+			favoriteInfo.removeMeFromFavorite(favoriteAppAdapter , false);
 			break;
 		case R.id.menuBtnChangeIcon:
 			appPopupMenu.dismiss();

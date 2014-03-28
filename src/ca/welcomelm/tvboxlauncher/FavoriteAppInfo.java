@@ -22,6 +22,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -40,22 +43,30 @@ public class FavoriteAppInfo extends AppInfo {
 	private String backgroundUri;
 	private String customIconUri;
 	private String componentName;
-	private long lastModifiedTime = 0;
 	
-	private Drawable background = null;
+	private Drawable background;
     
-	private Drawable customIcon = null;
+	private Drawable customIcon;
+	
+	static private FavoriteDatabase favoriteDb;
     
-	private FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon, Point dimension) {
+	private FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon, 
+			Point dimension) {
 		super(title , componentName, icon, dimension);
 		this.state = USE_DEFAULT_ICON;
 		this.backgroundUri = null;
 		this.customIconUri = null;
+		this.background = null;
+		this.customIcon = null;
 		this.componentName = componentName.flattenToString();
 	}
     
     public static FavoriteAppInfo from (AppInfo info , Point dimension){
     	return new FavoriteAppInfo(info.title , info.intent.getComponent(), info.icon , dimension);
+    }
+    
+    public static void setDb(FavoriteDatabase db){
+    	favoriteDb = db;
     }
 
 	@Override
@@ -77,94 +88,23 @@ public class FavoriteAppInfo extends AppInfo {
 			}			
 		}
 	}
-
-	public Drawable getBackground() {
-		return background;
-	}
-
-	public void setBackground(Drawable background) {
-		this.background = background;
-	}
-
-	public Drawable getCustomIcon() {
-		return customIcon;
-	}
-
-	public void setCustomIcon(Drawable customIcon) {
-		this.customIcon = customIcon;
-	}
 	
-	public void addMeToFavorite(Context context , AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
+	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
 		
-		File dir = new File(Environment.getExternalStorageDirectory(), 
-				context.getApplicationInfo().packageName);
-		
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		
-		File file = new File(dir , intent.getComponent().getClassName());
-		
-		if (file.exists()){
-			return;
-		}
-		
-		if(!ordered){
-			this.scaleIcon(context, new Point(dimension.y * 4 / 5, dimension.y * 4 / 5));
+		if( favoriteDb.addFavorite(this) && !ordered ){
 			adapter.add(this);
 		}
 		
-		try {
-			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-			bw.write(componentName);
-			bw.newLine();
-			bw.write(state);
-			bw.newLine();
-			if (state.equals(USE_CUSTOM_ICON)) {
-				bw.write(customIconUri);
-				bw.newLine();
-			}else if (state.equals(USE_CUSTOM_BACKGROUND)) {
-				bw.write(backgroundUri);
-				bw.newLine();
-			}
-			bw.flush();
-			bw.close();
-			
-			if (ordered && lastModifiedTime != 0) {
-				file.setLastModified(lastModifiedTime);
-				lastModifiedTime = 0;
-			}else{
-				
-			}
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
-	public void removeMeFromFavorite(Context context , AppAdapter<FavoriteAppInfo> adapter , Boolean ordered){
+	public void removeMeFromFavorite(AppAdapter<FavoriteAppInfo> adapter , Boolean ordered){
 		
-		if(!ordered){
+		if (!ordered) {
 			adapter.remove(this);
 		}
-
-		File dir = new File(Environment.getExternalStorageDirectory(), 
-				context.getApplicationInfo().packageName);
 		
-		if (!dir.exists()) {
-			return;
-		}
+		favoriteDb.removeFavorite(this);
 		
-		File file = new File(dir , intent.getComponent().getClassName());
-		
-		if (file.exists()){
-			lastModifiedTime = file.lastModified();
-			file.delete();
-		}
 	}
 
 	public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
@@ -259,8 +199,8 @@ public class FavoriteAppInfo extends AppInfo {
 				this.customIcon = customIcon;
 				state = USE_CUSTOM_ICON;
 				customIconUri = uri.toString();
-				removeMeFromFavorite(context , adapter, true);
-				addMeToFavorite(context , adapter , true);
+				removeMeFromFavorite(adapter, true);
+				addMeToFavorite(adapter , true);
 				adapter.notifyDataSetChanged();
 			}
 			
@@ -268,5 +208,56 @@ public class FavoriteAppInfo extends AppInfo {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public static class FavoriteDatabase extends SQLiteOpenHelper {
+		
+		Context context;
+		static String tableName;
+		static final private String names[] = {"componentName" , "state" , "customIconUri" , "backgroundUri"};
+		static final private int componentName = 1;
+		static final private int state = 2;
+		static final private int customIconUri = 3;
+		static final private int backgroundUri = 4;
+
+		public FavoriteDatabase(Context context) {
+			super(context, context.getPackageName(), null, 1);
+			// TODO Auto-generated constructor stub
+			this.context = context;
+			tableName = "favorites";
+		}
+		
+		public void removeFavorite(FavoriteAppInfo favoriteAppInfo) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		public boolean addFavorite(FavoriteAppInfo favoriteAppInfo) {
+			// TODO Auto-generated method stub
+			SQLiteDatabase dbRead = this.getReadableDatabase();
+			SQLiteDatabase dbWrite = this.getWritableDatabase();
+			
+			Cursor cursor = dbRead.query(tableName, null, names[componentName] + "=?", 
+					new String[1]{favoriteAppInfo.componentName}, null, null, null);
+			
+			return false;
+		}
+
+		@Override
+		public void onCreate(SQLiteDatabase db) {
+			// TODO Auto-generated method stub
+			db.execSQL("CREATE TABLE " + tableName + "()");
+			for (String name : names) {
+				db.execSQL("ALTER TABLE " + tableName + " ADD COLUMN " + name + " TEXT DEFAULT NONE");
+			}
+		}
+
+		@Override
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			// TODO Auto-generated method stub
+
+		}
+		
+		
 	}
 }
