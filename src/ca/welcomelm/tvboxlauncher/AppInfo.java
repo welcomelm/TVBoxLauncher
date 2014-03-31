@@ -6,12 +6,17 @@ import java.util.List;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -72,18 +77,15 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(View view , LinearLayout ll){
-    	if (view instanceof TextView) {
-    		ll.getLayoutParams().width = dimension.x;
-			ll.getLayoutParams().height = dimension.y;
-			TextView tv = (TextView) view;
-	    	tv.setWidth(dimension.x * 4 / 5);
-			tv.setHeight(dimension.y * 4 / 5);
-			tv.setText(title);
-			tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
-			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
-			tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
-		}
+    public void SetMeOnTextView(LinearLayout ll){
+		ll.getLayoutParams().width = dimension.x;
+		ll.getLayoutParams().height = dimension.y;
+		TextView tv = (TextView) ll.findViewById(R.id.tvAppTitle);
+    	tv.setWidth(dimension.x * 4 / 5);
+		tv.setHeight(dimension.y * 4 / 5);
+		tv.setText(title);
+		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
+		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
     }
 
     public CharSequence getTitle() {
@@ -163,7 +165,7 @@ public class AppInfo {
                 AppInfo application = new AppInfo(info.loadLabel(manager) ,
                 		new ComponentName(info.activityInfo.applicationInfo.packageName, 
                 				info.activityInfo.name), 
-                				info.loadIcon(manager),
+                				loadFullResIcon(info, manager),
                 				dimension);
                 
                 application.scaleIcon(context, new Point(dimension.y / 2, dimension.y / 2));
@@ -171,6 +173,29 @@ public class AppInfo {
                 adapter.add(application);
             }
         }
+	}
+	
+	protected static Drawable loadFullResIcon(ResolveInfo info, PackageManager manager){
+		try {
+			ApplicationInfo appInfo= info.activityInfo.applicationInfo;
+			System.out.println(info.loadLabel(manager));
+			Resources res = manager.getResourcesForApplication(appInfo);
+			int displayMetrics[] = { DisplayMetrics.DENSITY_XXHIGH, DisplayMetrics.DENSITY_XHIGH , 
+					DisplayMetrics.DENSITY_HIGH , DisplayMetrics.DENSITY_MEDIUM};
+
+			for(int displayMetric : displayMetrics){
+			Drawable d = res.getDrawableForDensity(appInfo.icon , displayMetric);
+				if (d!=null) {
+					System.out.println(displayMetric);
+					return d;
+				}
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return info.loadIcon(manager);
 	}
 
 	public void excute(Context context) {

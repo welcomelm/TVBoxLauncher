@@ -48,18 +48,7 @@ public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 		
 		AppInfo appInfo = getItem(position);
 		
-		View v = ll.findViewById(R.id.tvAppTitle);
-		
-		switch (resID) {
-		case R.layout.favorites_cell:
-			ll.setPadding(0, 0, 0, 0);
-			break;
-
-		default:
-			break;
-		}
-
-		appInfo.SetMeOnTextView(v , ll);
+		appInfo.SetMeOnTextView(ll);
 		
 		return ll;
 	}
