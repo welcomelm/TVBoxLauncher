@@ -44,13 +44,22 @@ public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 			ll = (LinearLayout) convertView;
 		}else {
 			ll = (LinearLayout) LayoutInflater.from(context).inflate(resID, parent, false);
-		}		
+		}
 		
 		AppInfo appInfo = getItem(position);
 		
 		View v = ll.findViewById(R.id.tvAppTitle);
+		
+		switch (resID) {
+		case R.layout.favorites_cell:
+			ll.setPadding(0, 0, 0, 0);
+			break;
 
-		appInfo.SetMeOnTextView(v);
+		default:
+			break;
+		}
+
+		appInfo.SetMeOnTextView(v , ll);
 		
 		return ll;
 	}

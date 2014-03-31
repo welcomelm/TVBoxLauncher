@@ -117,6 +117,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
 		favoriteDatabase = new FavoriteAppInfo.FavoriteDatabase(this);
 		FavoriteAppInfo.setDb(favoriteDatabase);
+		
+		//getWindow().setBackgroundDrawableResource(R.drawable.default_wallpaper);
 	}
 
 	private void popupInit() {
@@ -155,18 +157,22 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
-		System.out.println(metrics.toString());
 		
-		gvAppCellDimension = new Point(metrics.widthPixels / 4, (int) (metrics.heightPixels / 3.5));
+		metrics.heightPixels = 720;
+		
+		gvAppCellDimension = new Point((int) (metrics.widthPixels / 3.5), (int) (metrics.heightPixels / 3.5));
 		gvShowAppCellDimension = new Point(metrics.widthPixels / 6, metrics.heightPixels / 4);
 		
-		gvApp.setColumnWidth(metrics.widthPixels / 4);
-		gvShowApp.setColumnWidth(metrics.widthPixels / 6);
-		gvApp.setPadding(metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32, metrics.widthPixels/32);
-		gvApp.setVerticalSpacing(metrics.widthPixels/16);
-		gvApp.setHorizontalSpacing(metrics.widthPixels/32);
-		gvShowApp.setPadding(metrics.widthPixels/64, metrics.widthPixels/96, metrics.widthPixels/64, metrics.widthPixels/96);
-		gvShowApp.setVerticalSpacing(metrics.widthPixels/64);
+		double gvShowAppVerticalPercent = (8 / 9.3 - 3.0 / 4) / 4;
+		double gvAppVerticalPercent = (8 / 9.3 - 2 / 3.5) / 3;
+		
+		gvApp.setColumnWidth((int) (metrics.widthPixels / 3));
+		gvShowApp.setColumnWidth(metrics.widthPixels / 5);
+		gvApp.setPadding(0, (int)(metrics.heightPixels*gvAppVerticalPercent), 0, (int)(metrics.heightPixels*gvAppVerticalPercent));
+		gvApp.setVerticalSpacing((int) (metrics.heightPixels*gvAppVerticalPercent));
+		gvShowApp.setPadding(0, (int)(metrics.heightPixels * gvShowAppVerticalPercent), 
+				0, (int)(metrics.heightPixels * gvShowAppVerticalPercent));
+		gvShowApp.setVerticalSpacing((int) (metrics.heightPixels * gvShowAppVerticalPercent));
 		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
@@ -449,7 +455,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.gvShowApp:
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
 			FavoriteAppInfo favoriteInfo = FavoriteAppInfo.from(info , gvAppCellDimension);
-			favoriteInfo.addMeToFavorite(favoriteAppAdapter , false);
+			favoriteInfo.addMeToFavorite(this , favoriteAppAdapter , false);
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;

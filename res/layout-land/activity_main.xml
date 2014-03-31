@@ -66,10 +66,11 @@
             android:layout_height="fill_parent"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
-            android:stretchMode="spacingWidth"
+            android:stretchMode="spacingWidthUniform"
             android:visibility="visible"
             android:scrollbars="none"
-            android:listSelector="@drawable/app_big_list_selector">
+            android:gravity="center"
+            android:listSelector="@drawable/selector">
         </GridView>
             
         <GridView android:id="@+id/gvShowApp"
@@ -77,10 +78,11 @@
             android:layout_height="fill_parent"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
-            android:stretchMode="spacingWidth"
+            android:stretchMode="spacingWidthUniform"
             android:visibility="invisible"
             android:scrollbars="none"
-            android:listSelector="@drawable/app_list_selector">
+            android:gravity="center"
+            android:listSelector="@drawable/small_selector">
             
         </GridView>
         

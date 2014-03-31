@@ -14,6 +14,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class AppInfo {
@@ -71,11 +72,13 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(View view){
+    public void SetMeOnTextView(View view , LinearLayout ll){
     	if (view instanceof TextView) {
+    		ll.getLayoutParams().width = dimension.x;
+			ll.getLayoutParams().height = dimension.y;
 			TextView tv = (TextView) view;
-	    	tv.setWidth(dimension.x);
-			tv.setHeight(dimension.y);
+	    	tv.setWidth(dimension.x * 4 / 5);
+			tv.setHeight(dimension.y * 4 / 5);
 			tv.setText(title);
 			tv.setPadding(0, dimension.x/15, 0, dimension.x/15);
 			tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);

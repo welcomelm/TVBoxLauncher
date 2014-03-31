@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import android.content.ComponentName;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -31,6 +32,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public class FavoriteAppInfo extends AppInfo {
@@ -54,8 +56,8 @@ public class FavoriteAppInfo extends AppInfo {
 			Point dimension) {
 		super(title , componentName, icon, dimension);
 		this.state = USE_DEFAULT_ICON;
-		this.backgroundUri = null;
-		this.customIconUri = null;
+		this.backgroundUri = "";
+		this.customIconUri = "";
 		this.background = null;
 		this.customIcon = null;
 		this.componentName = componentName.flattenToString();
@@ -70,12 +72,14 @@ public class FavoriteAppInfo extends AppInfo {
     }
 
 	@Override
-	public void SetMeOnTextView(View view) {
+	public void SetMeOnTextView(View view , LinearLayout ll) {
 		// TODO Auto-generated method stub
 		if (view instanceof ImageView) {
+			ll.getLayoutParams().width = dimension.x;
+			ll.getLayoutParams().height = dimension.y;
 			ImageView iv = (ImageView) view;
-			iv.getLayoutParams().width = dimension.x;
-			iv.getLayoutParams().height = dimension.y;
+			iv.getLayoutParams().width = dimension.x * 4 / 5;
+			iv.getLayoutParams().height = dimension.y * 4 / 5;
 			if (state.equals(USE_DEFAULT_ICON)) {
 				iv.setImageDrawable(icon);
 				iv.setBackgroundResource(R.drawable.app_big_background);
@@ -89,9 +93,10 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 	}
 	
-	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
+	public void addMeToFavorite(Context context , AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
 		
 		if( favoriteDb.addFavorite(this) && !ordered ){
+			this.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
 			adapter.add(this);
 		}
 		
@@ -107,88 +112,6 @@ public class FavoriteAppInfo extends AppInfo {
 		
 	}
 
-	public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
-		// TODO Auto-generated method stub
-		File dir = new File(Environment.getExternalStorageDirectory(), 
-				context.getApplicationInfo().packageName);
-		
-		if (!dir.exists()) {
-			return;
-		}
-		
-		File[] files = dir.listFiles();
-		
-		Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File file1, File file2) {
-                return (int)(file1.lastModified() - file2.lastModified());
-            }
-        });
-		
-		PackageManager manager = context.getPackageManager();
-		
-		adapter.clear();
-		
-		for(File file : files){
-			try {
-				BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-				
-				String componentName = br.readLine();
-				
-				System.out.println(file.lastModified());
-				
-				Intent intent = new Intent(Intent.ACTION_MAIN);
-		        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-		        intent.setComponent(ComponentName.unflattenFromString(componentName));
-		        
-		        ResolveInfo info = manager.resolveActivity(intent, 0);
-		        
-		        if (info != null) {
-	                FavoriteAppInfo application = new FavoriteAppInfo(info.loadLabel(manager) ,
-	                		new ComponentName(info.activityInfo.applicationInfo.packageName, 
-	                				info.activityInfo.name), 
-	                				info.loadIcon(manager),
-	                				dimension);
-	                
-	                application.state = br.readLine();
-	                
-	                if (application.state.equals(USE_CUSTOM_ICON)) {
-	                	application.customIconUri = br.readLine();
-	                	Uri uri = Uri.parse(application.customIconUri);
-	                	Drawable customIcon = Drawable.createFromStream(
-	                			context.getContentResolver().openInputStream(uri), 
-								uri.toString());
-	                	if (customIcon != null) {
-	                		application.customIcon = customIcon;
-	                	} else {
-	                		application.state = USE_DEFAULT_ICON;
-	                	}
-					}else if (application.state.equals(USE_CUSTOM_BACKGROUND)) {
-						application.backgroundUri = br.readLine();
-					}
-	                
-	                br.close();
-	                
-	                application.componentName = componentName;
-	                
-	                application.scaleIcon(context, new Point(dimension.y * 4 / 5, dimension.y * 4 / 5));
-
-	                adapter.add(application);
-				}
-				
-			} catch (StreamCorruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
 	public void changeCustomIcon(Context context, Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
 		// TODO Auto-generated method stub
 		try {
@@ -200,7 +123,7 @@ public class FavoriteAppInfo extends AppInfo {
 				state = USE_CUSTOM_ICON;
 				customIconUri = uri.toString();
 				removeMeFromFavorite(adapter, true);
-				addMeToFavorite(adapter , true);
+				addMeToFavorite(context , adapter , true);
 				adapter.notifyDataSetChanged();
 			}
 			
@@ -210,46 +133,83 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 	}
 	
+	public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension){
+		FavoriteDatabase.loadFavorites(context, adapter, dimension);
+	}
+	
 	public static class FavoriteDatabase extends SQLiteOpenHelper {
 		
 		Context context;
-		static String tableName;
+		static final private String tableName = "favorites";
 		static final private String names[] = {"componentName" , "state" , "customIconUri" , "backgroundUri"};
-		static final private int componentName = 1;
-		static final private int state = 2;
-		static final private int customIconUri = 3;
-		static final private int backgroundUri = 4;
+		static final private int componentName = 0;
+		static final private int state = 1;
+		static final private int customIconUri = 2;
+		static final private int backgroundUri = 3;
 
 		public FavoriteDatabase(Context context) {
 			super(context, context.getPackageName(), null, 1);
 			// TODO Auto-generated constructor stub
 			this.context = context;
-			tableName = "favorites";
 		}
 		
 		public void removeFavorite(FavoriteAppInfo favoriteAppInfo) {
 			// TODO Auto-generated method stub
+			SQLiteDatabase dbWrite = this.getWritableDatabase();
 			
+			String[] whereArgs = {favoriteAppInfo.componentName};
+			
+			dbWrite.delete(tableName, names[componentName] + "=?", whereArgs);
+			
+			dbWrite.close();
 		}
 
 		public boolean addFavorite(FavoriteAppInfo favoriteAppInfo) {
 			// TODO Auto-generated method stub
 			SQLiteDatabase dbRead = this.getReadableDatabase();
-			SQLiteDatabase dbWrite = this.getWritableDatabase();
+			
+			String[] selectionArgs = {favoriteAppInfo.componentName};
 			
 			Cursor cursor = dbRead.query(tableName, null, names[componentName] + "=?", 
-					new String[1]{favoriteAppInfo.componentName}, null, null, null);
+										selectionArgs, null, null, null);
 			
-			return false;
+			if (cursor.getCount() != 0) {
+				dbRead.close();
+				return false;
+			}
+			
+			dbRead.close();
+			
+			SQLiteDatabase dbWrite = this.getWritableDatabase();
+			
+			ContentValues values = new ContentValues();
+			
+			values.put(names[componentName], favoriteAppInfo.componentName);
+			values.put(names[state],         favoriteAppInfo.state);
+			values.put(names[customIconUri], favoriteAppInfo.customIconUri);
+			values.put(names[backgroundUri], favoriteAppInfo.backgroundUri);
+			
+			dbWrite.insert(tableName, null, values);
+			
+			dbWrite.close();
+			
+			return true;
 		}
 
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			// TODO Auto-generated method stub
-			db.execSQL("CREATE TABLE " + tableName + "()");
-			for (String name : names) {
-				db.execSQL("ALTER TABLE " + tableName + " ADD COLUMN " + name + " TEXT DEFAULT NONE");
+			StringBuilder sqlCommand = new StringBuilder();
+			sqlCommand.append("CREATE TABLE " + tableName + "(");
+			
+			for (int i = 0; i < names.length; i++) {
+				sqlCommand.append(names[i] + " TEXT DEFAULT NONE");
+				if(i < names.length - 1)
+					sqlCommand.append(",");
 			}
+			
+			sqlCommand.append(")");
+			db.execSQL(sqlCommand.toString());
 		}
 
 		@Override
@@ -258,6 +218,63 @@ public class FavoriteAppInfo extends AppInfo {
 
 		}
 		
-		
+		public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
+			// TODO Auto-generated method stub
+			SQLiteDatabase dbRead = favoriteDb.getReadableDatabase();
+			
+			Cursor cursor = dbRead.query(tableName, null, null, null, null, null, null);
+			
+			PackageManager manager = context.getPackageManager();
+			
+			adapter.clear();
+			
+			while(cursor.moveToNext()){
+				
+				String name = cursor.getString(cursor.getColumnIndex(names[componentName]));
+				
+				Intent intent = new Intent(Intent.ACTION_MAIN);
+		        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+		        intent.setComponent(ComponentName.unflattenFromString(name));
+		        
+		        ResolveInfo info = manager.resolveActivity(intent, 0);
+		        
+		        if (info != null) {
+	                FavoriteAppInfo application = new FavoriteAppInfo(info.loadLabel(manager) ,
+	                		new ComponentName(info.activityInfo.applicationInfo.packageName, 
+	                				info.activityInfo.name), 
+	                				info.loadIcon(manager),
+	                				dimension);
+	                
+	                application.state = cursor.getString(cursor.getColumnIndex(names[state]));
+	                
+	                if (application.state.equals(USE_CUSTOM_ICON)) {
+	                	try{
+		                	application.customIconUri = cursor.getString(cursor.getColumnIndex(names[customIconUri]));
+		                	Uri uri = Uri.parse(application.customIconUri);
+		                	Drawable customIcon = Drawable.createFromStream(
+		                			context.getContentResolver().openInputStream(uri), 
+									uri.toString());
+		                	if (customIcon != null) {
+		                		application.customIcon = customIcon;
+		                	} else {
+		                		application.state = USE_DEFAULT_ICON;
+		                	}
+	                	}catch(Exception e){
+	                		
+	                	}
+					}else if (application.state.equals(USE_CUSTOM_BACKGROUND)) {
+						application.backgroundUri = cursor.getString(cursor.getColumnIndex(names[backgroundUri]));
+					}
+	                
+	                dbRead.close();
+	                
+	                application.componentName = name;
+	                
+	                application.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
+
+	                adapter.add(application);
+				}
+			}
+		}
 	}
 }
