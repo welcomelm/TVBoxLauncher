@@ -37,6 +37,7 @@ public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		Boolean selected = false;
 		// TODO Auto-generated method stub
 		LinearLayout ll = null;
 		
@@ -48,7 +49,10 @@ public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 		
 		AppInfo appInfo = getItem(position);
 		
-		appInfo.SetMeOnTextView(ll);
+		if (convertView != null && MainActivity.lastSelectedGridView == convertView) {
+			selected = true;
+		}
+		appInfo.SetMeOnTextView(ll , selected);
 		
 		return ll;
 	}

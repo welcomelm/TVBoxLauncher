@@ -46,22 +46,7 @@
 	    android:gravity="center"
 	    android:background="@drawable/popup_menu_button"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="SETTINGS"/>
-
-	<TextView android:layout_height="0dp"
-	    android:layout_width="fill_parent"
-	    android:layout_weight="0.2"/>
-	
-	<Button android:id="@+id/menuBtnTest" 
-	    android:layout_width="fill_parent"
-	    android:layout_height="0dp"
-	    android:layout_weight="1"
-	    android:gravity="center"
-	    android:background="@drawable/popup_menu_button"
-	    style="@style/PopupMenuButtonText"
-	    android:onClick="onClick"
-	    android:text="TEST"/>
-	
+	    android:text="SETTINGS"/>	
 	</LinearLayout>
     
 </LinearLayout>

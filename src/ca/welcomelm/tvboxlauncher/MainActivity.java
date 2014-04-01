@@ -16,8 +16,10 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -46,7 +48,8 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
+public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
+OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
@@ -72,9 +75,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageButton btnMenu;
 	
-	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings, menuBtnExcute, menuBtnRemove, menuBtnChangeIcon, menuBtnChangeBackground;
+	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings, menuBtnExcute, 
+				menuBtnRemove, menuBtnChangeIcon, menuBtnChangeBackground;
 	
-	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, llPopupButtons, llAppPopupButtons, llAppPopupMenu;
+	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, 
+						llPopupButtons, llAppPopupButtons, llAppPopupMenu;
 	
 	private Point gvAppCellDimension, gvShowAppCellDimension;
 	
@@ -83,6 +88,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private int appPopIndex;
 	
 	private FavoriteAppInfo.FavoriteDatabase favoriteDatabase;
+	private Typeface appTypeface;
+	
+	public static View lastSelectedGridView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -117,9 +125,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private void setMis() {
 		// TODO Auto-generated method stub
-		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
+		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.TTF");
 		favoriteDatabase = new FavoriteAppInfo.FavoriteDatabase(this);
 		FavoriteAppInfo.setDb(favoriteDatabase);
+		AppInfo.setFont(appTypeface);
 	}
 
 	private void popupInit() {
@@ -316,7 +325,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		NetworkInfo info = cm.getActiveNetworkInfo();
 		
 		if(info == null || !info.isConnected()){
-			System.out.println(info.getTypeName() + "...isConnected... " + info.isConnected());
 			ivNetwork.setImageResource(R.drawable.disconnect);
 		}else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
 			ivNetwork.setImageResource(R.drawable.ethernet);
@@ -331,23 +339,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		gvShowApp.setOnItemClickListener(this);
 		gvShowApp.setOnItemLongClickListener(this);
+		gvShowApp.setOnItemSelectedListener(this);
+		gvShowApp.setOnFocusChangeListener(this);
+		
 		gvApp.setOnItemClickListener(this);
 		gvApp.setOnItemLongClickListener(this);
-		gvApp.setOnItemSelectedListener(new OnItemSelectedListener() {
-
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int position, long id) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+		gvApp.setOnItemSelectedListener(this);
+		gvApp.setOnFocusChangeListener(this);
+		
 		btnMenu.setOnClickListener(this);
 		menuBtnApps.setOnClickListener(this);
 		menuBtnSettings.setOnClickListener(this);
@@ -507,12 +506,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnWallpaper:
 			mainPopupMenu.dismiss();
-//            Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
-//            startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
 			chooseImage(requestWallpaper);
-			break;
-		case R.id.menuBtnTest:
-			mainPopupMenu.dismiss();
 			break;
 		case R.id.menuBtnExcute:
 			appPopupMenu.dismiss();
@@ -581,6 +575,43 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         	startActivityForResult(pickBackground, requestCode);
 		}else {
 			Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		// TODO Auto-generated method stub
+		if (!hasFocus) {
+			lastSelectedGridView = null;
+			if (v == gvApp) {
+				favoriteAppAdapter.notifyDataSetChanged();
+			}else if (v == gvShowApp) {
+				allAppAdapter.notifyDataSetChanged();
+			}
+		}
+	}
+
+	@Override
+	public void onItemSelected(AdapterView<?> parent, View view, int position,
+			long id) {
+		if (view != null) {
+			lastSelectedGridView = view;
+			if (parent == gvApp) {
+				favoriteAppAdapter.notifyDataSetChanged();
+			}else if (parent == gvShowApp) {
+				allAppAdapter.notifyDataSetChanged();
+			}
+		}
+	}
+
+	@Override
+	public void onNothingSelected(AdapterView<?> parent) {
+		// TODO Auto-generated method stub
+		lastSelectedGridView = null;
+		if (parent == gvApp) {
+			favoriteAppAdapter.notifyDataSetChanged();
+		}else if (parent == gvShowApp) {
+			allAppAdapter.notifyDataSetChanged();
 		}
 	}
 }

@@ -2,6 +2,7 @@ package ca.welcomelm.tvboxlauncher;
 
 import java.io.FileNotFoundException;
 
+import android.R.bool;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
@@ -55,13 +56,24 @@ public class FavoriteAppInfo extends AppInfo {
     }
 
 	@Override
-	public void SetMeOnTextView(LinearLayout ll) {
+	public void SetMeOnTextView(View ll , Boolean selected) {
 		// TODO Auto-generated method stub
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
 		ImageView iv = (ImageView) ll.findViewById(R.id.tvAppTitle);
-		iv.getLayoutParams().width = dimension.x * 4 / 5;
-		iv.getLayoutParams().height = dimension.y * 4 / 5;
+		ResizeAnimation anim;
+		if (selected) {
+//	    	tv.setWidth(dimension.x - 5);
+//			tv.setHeight(dimension.y - 5);
+			anim = new ResizeAnimation(iv, dimension.x - 20, dimension.y - 20);
+		}else{
+//	    	iv.getLayoutParams().width = (dimension.x * 4 / 5);
+//	    	iv.getLayoutParams().height =(dimension.y * 4 / 5);
+			anim = new ResizeAnimation(iv, dimension.x *4 / 5, dimension.y * 4 / 5);
+		}
+		anim.setDuration(500);
+		iv.startAnimation(anim);
+		
 		if (state.equals(USE_DEFAULT_ICON)) {
 			iv.setImageDrawable(icon);
 			iv.setBackgroundResource(R.drawable.app_big_background);

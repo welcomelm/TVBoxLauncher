@@ -14,11 +14,13 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -40,6 +42,12 @@ public class AppInfo {
 	protected Drawable icon;
 	
 	protected Point dimension;
+	
+	protected static Typeface tf;
+	
+	public static void setFont(Typeface tf){
+		AppInfo.tf = tf;
+	}
     
     protected AppInfo(CharSequence title, ComponentName componentName, Drawable icon, Point dimension) {
 		super();
@@ -77,16 +85,30 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(LinearLayout ll){
+    public void SetMeOnTextView(View ll , Boolean selected){
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
 		TextView tv = (TextView) ll.findViewById(R.id.tvAppTitle);
-    	tv.setWidth(dimension.x * 4 / 5);
-		tv.setHeight(dimension.y * 4 / 5);
+		ResizeAnimation anim;
+		if (selected) {
+//	    	tv.setWidth(dimension.x - 5);
+//			tv.setHeight(dimension.y - 5);
+			anim = new ResizeAnimation(tv, dimension.x - 10, dimension.y - 10);
+		}else{
+//	    	tv.setWidth(dimension.x * 4 / 5);
+//			tv.setHeight(dimension.y * 4 / 5);
+			anim = new ResizeAnimation(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
+		}
+		anim.setDuration(500);
+		tv.startAnimation(anim);
+		
 		tv.setText(title);
 		tv.setPadding(0, dimension.x/20, 0, 0);
 		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
-		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
+		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
+		if (tf != null) {
+			tv.setTypeface(tf);
+		}
     }
 
     public CharSequence getTitle() {
@@ -179,7 +201,6 @@ public class AppInfo {
 	protected static Drawable loadFullResIcon(ResolveInfo info, PackageManager manager){
 		try {
 			ApplicationInfo appInfo= info.activityInfo.applicationInfo;
-			System.out.println(info.loadLabel(manager));
 			Resources res = manager.getResourcesForApplication(appInfo);
 			int displayMetrics[] = { DisplayMetrics.DENSITY_XXHIGH, DisplayMetrics.DENSITY_XHIGH , 
 					DisplayMetrics.DENSITY_HIGH , DisplayMetrics.DENSITY_MEDIUM};
@@ -187,7 +208,6 @@ public class AppInfo {
 			for(int displayMetric : displayMetrics){
 			Drawable d = res.getDrawableForDensity(appInfo.icon , displayMetric);
 				if (d!=null) {
-					System.out.println(displayMetric);
 					return d;
 				}
 			}
