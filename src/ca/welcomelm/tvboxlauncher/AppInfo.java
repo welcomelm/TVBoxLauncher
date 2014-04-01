@@ -84,6 +84,7 @@ public class AppInfo {
     	tv.setWidth(dimension.x * 4 / 5);
 		tv.setHeight(dimension.y * 4 / 5);
 		tv.setText(title);
+		tv.setPadding(0, dimension.x/20, 0, 0);
 		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
 		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);	
     }

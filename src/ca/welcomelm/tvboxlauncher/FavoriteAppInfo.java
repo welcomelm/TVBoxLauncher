@@ -77,7 +77,7 @@ public class FavoriteAppInfo extends AppInfo {
 	public void addMeToFavorite(Context context , AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
 		
 		if( favoriteDb.addFavorite(this , ordered) && !ordered ){
-			//this.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
+			this.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
 			adapter.add(this);
 		}
 		
@@ -271,7 +271,7 @@ public class FavoriteAppInfo extends AppInfo {
 	                
 	                application.componentName = name;
 	                
-	                //application.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
+	                application.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
 
 	                adapter.add(application);
 				}

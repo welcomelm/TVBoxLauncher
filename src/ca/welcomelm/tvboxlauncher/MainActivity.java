@@ -1,5 +1,6 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -16,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -46,7 +48,8 @@ import android.widget.Toast;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, OnClickListener {
 	
-	private final String FAVORITE_FILE = "favorites.txt";
+	private static final int requestWallpaper = 1;
+	private static final int requestFavoriteIcon = 2;
 	
     private final String TIME_FORMAT = "h:mma";
 
@@ -117,8 +120,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.ttf");
 		favoriteDatabase = new FavoriteAppInfo.FavoriteDatabase(this);
 		FavoriteAppInfo.setDb(favoriteDatabase);
-		
-		//getWindow().setBackgroundDrawableResource(R.drawable.default_wallpaper);
 	}
 
 	private void popupInit() {
@@ -158,7 +159,19 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
 		
-		metrics.heightPixels = 720;
+		if (metrics.widthPixels > 1280) {
+			metrics.widthPixels = 1920;
+		}else {
+			metrics.widthPixels = 1280;
+		}
+		
+		if (metrics.heightPixels > 720) {
+			metrics.heightPixels = 1080;
+		}else{
+			metrics.heightPixels = 720;
+		}
+		
+		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		gvAppCellDimension = new Point((int) (metrics.widthPixels / 3.5), (int) (metrics.heightPixels / 3.5));
 		gvShowAppCellDimension = new Point(metrics.widthPixels / 6, metrics.heightPixels / 4);
@@ -494,8 +507,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnWallpaper:
 			mainPopupMenu.dismiss();
-            Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
-            startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
+//            Intent pickWallpaper = new Intent(Intent.ACTION_SET_WALLPAPER);
+//            startActivity(Intent.createChooser(pickWallpaper, getString(R.string.menu_wallpaper)));
+			chooseImage(requestWallpaper);
 			break;
 		case R.id.menuBtnTest:
 			mainPopupMenu.dismiss();
@@ -512,16 +526,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnChangeIcon:
 			appPopupMenu.dismiss();
-            Intent pickBackground = new Intent(Intent.ACTION_GET_CONTENT);
-            pickBackground.setType("image/*");
-            pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-            PackageManager manager = getPackageManager();
-            List<ResolveInfo> infos = manager.queryIntentActivities(pickBackground, 0);
-            if (infos.size() > 0) {
-            	startActivityForResult(pickBackground, 0xbeef);
-			}else {
-				Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
-			}			
+			chooseImage(requestFavoriteIcon);
 			break;
 		case R.id.menuBtnChangeBackground:
 			appPopupMenu.dismiss();
@@ -538,10 +543,44 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// TODO Auto-generated method stub
-		FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
-		
-		if (data != null) {
-			info.changeCustomIcon(MainActivity.this , data.getData(), favoriteAppAdapter);		
+		switch (requestCode) {
+		case requestWallpaper:
+			try {
+				if (data != null) {
+					WallpaperManager.getInstance(this).setStream(this.getContentResolver().openInputStream(data.getData()));
+				}
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
+			
+		case requestFavoriteIcon:
+			
+			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
+			if (data != null) {
+				info.changeCustomIcon(MainActivity.this , data.getData(), favoriteAppAdapter);		
+			}			
+			break;
+
+		default:
+			break;
 		}	
+	}
+	
+	private void chooseImage(int requestCode){
+		Intent pickBackground = new Intent(Intent.ACTION_GET_CONTENT);
+        pickBackground.setType("image/*");
+        pickBackground.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+        PackageManager manager = getPackageManager();
+        List<ResolveInfo> infos = manager.queryIntentActivities(pickBackground, 0);
+        if (infos.size() > 0) {
+        	startActivityForResult(pickBackground, requestCode);
+		}else {
+			Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
+		}
 	}
 }
