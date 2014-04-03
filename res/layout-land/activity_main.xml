@@ -43,22 +43,26 @@
         android:layout_height="fill_parent"
         android:orientation="vertical">
             
-			<ImageButton android:id="@+id/btnMenu"
+			<Button android:id="@+id/btnMenu"
 			    android:layout_width="wrap_content"
 			    android:layout_height="fill_parent"
 			    android:layout_gravity="right"
-			    android:src="@drawable/menu_button"
-			    android:background="@android:color/transparent"
-			    android:scaleType="fitEnd"/>
+			    android:text="MENU"
+			    style="@style/TextField"
+			    android:background="@drawable/menu_button"/>
 
         </LinearLayout>
         
     </LinearLayout>
 
-    <RelativeLayout
+    <ViewSwitcher
+        android:id="@+id/vsGridView"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="8">
+        android:layout_weight="8"
+        android:inAnimation="@anim/popup_fadein"
+        android:outAnimation="@anim/popup_fadeout"
+        android:animateFirstView="true">
 
         <GridView
             android:id="@+id/gvApp"
@@ -79,13 +83,13 @@
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
             android:stretchMode="spacingWidthUniform"
-            android:visibility="invisible"
+            android:visibility="visible"
             android:scrollbars="none"
             android:gravity="center"
             android:listSelector="@drawable/small_selector">
             
         </GridView>
         
-    </RelativeLayout>
+    </ViewSwitcher>
 
 </LinearLayout>
