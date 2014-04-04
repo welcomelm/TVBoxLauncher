@@ -85,22 +85,19 @@ public class AppInfo {
         return intent;
     }
     
-    public void SetMeOnTextView(View ll , Boolean selected){
+    public void SetMeOnTextView(View ll , int selected){
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
 		TextView tv = (TextView) ll.findViewById(R.id.tvAppTitle);
-		ResizeAnimation anim;
-		if (selected) {
-//	    	tv.setWidth(dimension.x - 5);
-//			tv.setHeight(dimension.y - 5);
-			anim = new ResizeAnimation(tv, dimension.x - 10, dimension.y - 10);
+		
+		if (selected == AppAdapter.currentSelected) {
+			resizeView(tv, dimension.x - 10, dimension.y - 10);
+		} else if (selected == AppAdapter.lastSelected){
+			resizeView(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
 		}else{
-//	    	tv.setWidth(dimension.x * 4 / 5);
-//			tv.setHeight(dimension.y * 4 / 5);
-			anim = new ResizeAnimation(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
+			tv.setWidth(dimension.x * 4 / 5);
+			tv.setHeight(dimension.y * 4 / 5);
 		}
-		anim.setDuration(500);
-		tv.startAnimation(anim);
 		
 		tv.setText(title);
 		tv.setPadding(0, dimension.x/20, 0, 0);
@@ -109,6 +106,12 @@ public class AppInfo {
 		if (tf != null) {
 			tv.setTypeface(tf);
 		}
+    }
+    
+    protected void resizeView(View view , int width, int Height){
+    	ResizeAnimation anim = new ResizeAnimation(view, width, Height);
+		anim.setDuration(250);
+		view.startAnimation(anim);
     }
 
     public CharSequence getTitle() {
@@ -212,8 +215,6 @@ public class AppInfo {
 				}
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 		
 		return info.loadIcon(manager);
@@ -222,5 +223,12 @@ public class AppInfo {
 	public void excute(Context context) {
 		// TODO Auto-generated method stub
 		context.startActivity(intent);
+	}
+
+	public void addMeToFavorite(Context context,
+			AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
+		// TODO Auto-generated method stub
+		FavoriteAppInfo favoriteInfo = new FavoriteAppInfo(title , intent.getComponent(), icon , dimension);
+		favoriteInfo.addMeToFavorite(context , adapter , false);
 	}
 }

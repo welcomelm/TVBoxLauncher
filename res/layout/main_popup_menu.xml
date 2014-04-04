@@ -6,13 +6,6 @@
     android:gravity="center"
     android:layout_gravity="center">
     
-    <LinearLayout android:id="@+id/llPopupButtons"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:layout_gravity="center">
-    
 	<Button android:id="@+id/menuBtnApps" 
 	    android:layout_width="fill_parent"
 	    android:layout_height="0dp"
@@ -47,6 +40,5 @@
 	    android:background="@drawable/popup_menu_button"
 	   	style="@style/PopupMenuButtonText"
 	    android:text="SETTINGS"/>	
-	</LinearLayout>
     
 </LinearLayout>

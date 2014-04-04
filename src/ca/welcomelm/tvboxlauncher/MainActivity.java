@@ -39,6 +39,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -47,12 +48,14 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
 OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
+	private static final int requestBackground = 3;
 	
     private final String TIME_FORMAT = "h:mma";
 
@@ -73,24 +76,22 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	
 	private ImageView ivNetwork;
 	
-	private ImageButton btnMenu;
+	private Button btnMenu;
 	
-	private Button menuBtnApps, menuBtnWallpaper, menuBtnSettings, menuBtnExcute, 
-				menuBtnRemove, menuBtnChangeIcon, menuBtnChangeBackground;
-	
-	private LinearLayout llBtnMenu , llNetAndTime, llMain, llPopupMenu, 
-						llPopupButtons, llAppPopupButtons, llAppPopupMenu;
+	private LinearLayout llBtnMenu , llNetAndTime, llMain; 
 	
 	private Point gvAppCellDimension, gvShowAppCellDimension;
 	
-	private PopupWindow mainPopupMenu, appPopupMenu;
+	private CustomPopupMenu mainPopupMenu, appPopupMenu;
 
 	private int appPopIndex;
 	
 	private FavoriteAppInfo.FavoriteDatabase favoriteDatabase;
 	private Typeface appTypeface;
 	
-	public static View lastSelectedGridView;
+	public static View currentSelectedGridView , lastSelectedGridView;
+	
+	private ViewSwitcher vsGridView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,19 +134,12 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 
 	private void popupInit() {
 		// TODO Auto-generated method stub
-		mainPopupMenu = new PopupWindow(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-		mainPopupMenu.setContentView(llPopupMenu);
-		mainPopupMenu.setFocusable(true);
-		mainPopupMenu.setOutsideTouchable(true);
-		mainPopupMenu.setBackgroundDrawable(new ColorDrawable(0xb0000000));
-		mainPopupMenu.setAnimationStyle(R.style.PopupAnimation);
+		mainPopupMenu = new CustomPopupMenu(this, R.layout.main_popup_menu);
+		appPopupMenu = new CustomPopupMenu(this, R.layout.app_popup_menu);
 		
-		appPopupMenu = new PopupWindow(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT);
-		appPopupMenu.setContentView(llAppPopupMenu);
-		appPopupMenu.setFocusable(true);
-		appPopupMenu.setOutsideTouchable(true);
-		appPopupMenu.setBackgroundDrawable(new ColorDrawable(0xb0000000));
-		appPopupMenu.setAnimationStyle(R.style.PopupAnimation);
+		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
+		appPopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
 	}
 
 	private void startSplash() {
@@ -198,26 +192,9 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
-		llBtnMenu.setPadding(0, 0, metrics.widthPixels/128, 0);		
+		llBtnMenu.setPadding(0 , 0, metrics.widthPixels/128, 0);
+		btnMenu.getLayoutParams().width = (int) (metrics.heightPixels * 2 / 9.3);
 		llNetAndTime.setPadding(metrics.widthPixels/128, 0, 0, 0);
-		
-		llPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
-		menuBtnApps.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnSettings.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnWallpaper.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);	
-		menuBtnApps.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		menuBtnSettings.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		menuBtnWallpaper.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		
-		llAppPopupButtons.getLayoutParams().height = metrics.heightPixels * 2 / 3;
-		menuBtnExcute.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnRemove.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnChangeIcon.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
-		menuBtnChangeBackground.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);	
-		menuBtnExcute.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		menuBtnRemove.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		menuBtnChangeIcon.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
-		menuBtnChangeBackground.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 	}
 
 	private void loadFavorites() {
@@ -348,13 +325,6 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		gvApp.setOnFocusChangeListener(this);
 		
 		btnMenu.setOnClickListener(this);
-		menuBtnApps.setOnClickListener(this);
-		menuBtnSettings.setOnClickListener(this);
-		menuBtnWallpaper.setOnClickListener(this);
-		menuBtnExcute.setOnClickListener(this);
-		menuBtnRemove.setOnClickListener(this);
-		menuBtnChangeIcon.setOnClickListener(this);
-		menuBtnChangeBackground.setOnClickListener(this);
 	}
 
 	private void findViews() {
@@ -366,7 +336,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		
 		ivNetwork = (ImageView) findViewById(R.id.ivNet);
 		
-		btnMenu = (ImageButton) findViewById(R.id.btnMenu);
+		btnMenu = (Button) findViewById(R.id.btnMenu);
 		
 		llBtnMenu = (LinearLayout) findViewById(R.id.llBtnMenu);
 		
@@ -374,24 +344,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		
 		llMain = (LinearLayout) findViewById(R.id.llMain);
 		
-		llPopupMenu = (LinearLayout) LinearLayout.inflate(this, R.layout.main_popup_menu, null);
-		
-		menuBtnApps = (Button) llPopupMenu.findViewById(R.id.menuBtnApps);
-		
-		menuBtnSettings = (Button) llPopupMenu.findViewById(R.id.menuBtnSettings);
-		
-		menuBtnWallpaper = (Button) llPopupMenu.findViewById(R.id.menuBtnWallpaper);
-		
-		llPopupButtons = (LinearLayout) llPopupMenu.findViewById(R.id.llPopupButtons);
-		
-		llAppPopupMenu = (LinearLayout) LinearLayout.inflate(this, R.layout.app_popup_menu, null);
-		
-		llAppPopupButtons = (LinearLayout) llAppPopupMenu.findViewById(R.id.llAppPopupButtons);
-		
-		menuBtnExcute = (Button) llAppPopupMenu.findViewById(R.id.menuBtnExcute);
-		menuBtnRemove = (Button) llAppPopupMenu.findViewById(R.id.menuBtnRemove);
-		menuBtnChangeIcon = (Button) llAppPopupMenu.findViewById(R.id.menuBtnChangeIcon);
-		menuBtnChangeBackground = (Button) llAppPopupMenu.findViewById(R.id.menuBtnChangeBackground);
+		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
 	}
 
 	private void loadApplications() {
@@ -455,8 +408,9 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	@Override
 	public void onBackPressed() {
 		// TODO Auto-generated method stub
-		gvApp.setVisibility(GridView.VISIBLE);
-		gvShowApp.setVisibility(GridView.INVISIBLE);
+		if (vsGridView.getCurrentView() == gvShowApp) {
+			vsGridView.setDisplayedChild(0);
+		}
 	}
 
 	@Override
@@ -466,8 +420,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
-			FavoriteAppInfo favoriteInfo = FavoriteAppInfo.from(info , gvAppCellDimension);
-			favoriteInfo.addMeToFavorite(this , favoriteAppAdapter , false);
+			info.addMeToFavorite(this , favoriteAppAdapter , gvAppCellDimension);
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;
@@ -495,9 +448,10 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			mainPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
 			break;
 		case R.id.menuBtnApps:
-			mainPopupMenu.dismiss();
-        	gvShowApp.setVisibility(GridView.VISIBLE);
-        	gvApp.setVisibility(GridView.INVISIBLE);
+			mainPopupMenu.dismiss();			
+			if (vsGridView.getCurrentView() == gvApp) {
+				vsGridView.setDisplayedChild(1);
+			}
 			break;
 		case R.id.menuBtnSettings:
 			mainPopupMenu.dismiss();
@@ -524,14 +478,11 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			break;
 		case R.id.menuBtnChangeBackground:
 			appPopupMenu.dismiss();
-			Intent test = new Intent();
-			test.setClassName("ca.welcomelm.helloeoe", "ca.welcomelm.helloeoe.MainActivity");
-			startActivity(test);
-			break;
+			Intent chooseFavoriteBackground = new Intent(MainActivity.this, ChooseFavoriteBackground.class);
+			startActivityForResult(chooseFavoriteBackground, requestBackground);
 		default:
 			break;
-		}
-		
+		}	
 	}
 	
 	@Override
@@ -559,6 +510,14 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 				info.changeCustomIcon(MainActivity.this , data.getData(), favoriteAppAdapter);		
 			}			
 			break;
+			
+		case requestBackground:
+			
+			info = favoriteAppAdapter.getItem(appPopIndex);
+			if (data != null) {
+				info.changeCustomBackground(MainActivity.this , data.getData(), favoriteAppAdapter);		
+			}			
+			break;
 
 		default:
 			break;
@@ -581,21 +540,33 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	@Override
 	public void onFocusChange(View v, boolean hasFocus) {
 		// TODO Auto-generated method stub
+		AppAdapter adapter;
+		
+		if (v == gvApp) {
+			adapter = favoriteAppAdapter;
+		}else if (v == gvShowApp) {
+			adapter = allAppAdapter;
+		} else {
+			return;
+		}
+		
+		lastSelectedGridView = currentSelectedGridView;
 		if (!hasFocus) {
-			lastSelectedGridView = null;
-			if (v == gvApp) {
-				favoriteAppAdapter.notifyDataSetChanged();
-			}else if (v == gvShowApp) {
-				allAppAdapter.notifyDataSetChanged();
-			}
+			currentSelectedGridView = null;
+			adapter.notifyDataSetChanged();
+		}else{
+			currentSelectedGridView = ((GridView)v).getSelectedView();
+			adapter.notifyDataSetChanged();
 		}
 	}
 
 	@Override
 	public void onItemSelected(AdapterView<?> parent, View view, int position,
 			long id) {
+
 		if (view != null) {
-			lastSelectedGridView = view;
+			lastSelectedGridView = currentSelectedGridView;
+			currentSelectedGridView = view;
 			if (parent == gvApp) {
 				favoriteAppAdapter.notifyDataSetChanged();
 			}else if (parent == gvShowApp) {
@@ -607,7 +578,8 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	@Override
 	public void onNothingSelected(AdapterView<?> parent) {
 		// TODO Auto-generated method stub
-		lastSelectedGridView = null;
+		lastSelectedGridView = currentSelectedGridView;
+		currentSelectedGridView = null;
 		if (parent == gvApp) {
 			favoriteAppAdapter.notifyDataSetChanged();
 		}else if (parent == gvShowApp) {

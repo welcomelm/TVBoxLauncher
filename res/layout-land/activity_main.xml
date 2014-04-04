@@ -60,8 +60,8 @@
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="8"
-        android:inAnimation="@anim/popup_fadein"
-        android:outAnimation="@anim/popup_fadeout"
+        android:inAnimation="@anim/app_gridview_slidein"
+        android:outAnimation="@anim/app_gridview_slideout"
         android:animateFirstView="true">
 
         <GridView

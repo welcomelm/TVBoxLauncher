@@ -36,7 +36,7 @@ public class FavoriteAppInfo extends AppInfo {
 	
 	static private FavoriteDatabase favoriteDb;
     
-	private FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon, 
+	protected FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon, 
 			Point dimension) {
 		super(title , componentName, icon, dimension);
 		this.state = USE_DEFAULT_ICON;
@@ -47,32 +47,25 @@ public class FavoriteAppInfo extends AppInfo {
 		this.componentName = componentName.flattenToString();
 	}
     
-    public static FavoriteAppInfo from (AppInfo info , Point dimension){
-    	return new FavoriteAppInfo(info.title , info.intent.getComponent(), info.icon , dimension);
-    }
-    
     public static void setDb(FavoriteDatabase db){
     	favoriteDb = db;
     }
 
 	@Override
-	public void SetMeOnTextView(View ll , Boolean selected) {
+	public void SetMeOnTextView(View ll , int selected) {
 		// TODO Auto-generated method stub
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
-		ImageView iv = (ImageView) ll.findViewById(R.id.tvAppTitle);
-		ResizeAnimation anim;
-		if (selected) {
-//	    	tv.setWidth(dimension.x - 5);
-//			tv.setHeight(dimension.y - 5);
-			anim = new ResizeAnimation(iv, dimension.x - 20, dimension.y - 20);
+		ImageView iv = (ImageView) ll.findViewById(R.id.ivFavorite);
+
+		if (selected == AppAdapter.currentSelected) {
+			resizeView(iv, dimension.x - 20, dimension.y - 20);
+		} else if (selected == AppAdapter.lastSelected){
+			resizeView(iv, dimension.x * 4 / 5, dimension.y * 4 / 5);
 		}else{
-//	    	iv.getLayoutParams().width = (dimension.x * 4 / 5);
-//	    	iv.getLayoutParams().height =(dimension.y * 4 / 5);
-			anim = new ResizeAnimation(iv, dimension.x *4 / 5, dimension.y * 4 / 5);
+			iv.getLayoutParams().width = dimension.x * 4 / 5;
+			iv.getLayoutParams().height = dimension.y * 4 / 5;
 		}
-		anim.setDuration(500);
-		iv.startAnimation(anim);
 		
 		if (state.equals(USE_DEFAULT_ICON)) {
 			iv.setImageDrawable(icon);
@@ -124,6 +117,27 @@ public class FavoriteAppInfo extends AppInfo {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public void changeCustomBackground(Context context, Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
+		// TODO Auto-generated method stub
+		try {
+			Drawable background = Drawable.createFromStream(context.getContentResolver().
+										openInputStream(uri), uri.toString());
+			
+			if (background != null) {
+				this.background = background;
+				state = USE_CUSTOM_BACKGROUND;
+				backgroundUri = uri.toString();
+				removeMeFromFavorite(adapter, true);
+				addMeToFavorite(context , adapter , true);
+				adapter.notifyDataSetChanged();
+			}
+			
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 	}
 	
 	public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension){
@@ -276,7 +290,20 @@ public class FavoriteAppInfo extends AppInfo {
 	                		
 	                	}
 					}else if (application.state.equals(USE_CUSTOM_BACKGROUND)) {
-						application.backgroundUri = cursor.getString(cursor.getColumnIndex(names[backgroundUri]));
+	                	try{
+	                		application.backgroundUri = cursor.getString(cursor.getColumnIndex(names[backgroundUri]));
+		                	Uri uri = Uri.parse(application.backgroundUri);
+		                	Drawable background = Drawable.createFromStream(
+		                			context.getContentResolver().openInputStream(uri), 
+									uri.toString());
+		                	if (background != null) {
+		                		application.background = background;
+		                	} else {
+		                		application.state = USE_DEFAULT_ICON;
+		                	}
+	                	}catch(Exception e){
+	                		
+	                	}
 					}
 	                
 	                dbRead.close();

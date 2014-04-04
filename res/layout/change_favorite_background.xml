@@ -4,14 +4,16 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="#c0000000"
     android:layout_gravity="center">
     
-    <ViewSwitcher android:id="@+id/vsFavoriteBackground"
+    <LinearLayout android:id="@+id/llFavoriteBackground"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:background="@drawable/selector">
         
         <GridView
             android:id="@+id/gvFavoriteBackground"
@@ -23,13 +25,9 @@
             android:visibility="visible"
             android:scrollbars="none"
             android:gravity="center"
-            android:listSelector="@drawable/selector">
-        </GridView>
-        
-        <Button android:text="test"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-	
-	</ViewSwitcher>
+            android:listSelector="@drawable/selector"
+            android:layout_gravity="center">
+        </GridView>	
+	</LinearLayout>
     
 </LinearLayout>
