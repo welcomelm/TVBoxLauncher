@@ -43,19 +43,17 @@ public class AppInfo {
 	
 	protected Point dimension;
 	
-	protected static Typeface tf;
-	
-	public static void setFont(Typeface tf){
-		AppInfo.tf = tf;
-	}
+	protected Context context;
     
-    protected AppInfo(CharSequence title, ComponentName componentName, Drawable icon, Point dimension) {
+    protected AppInfo(Context context , CharSequence title, ComponentName componentName, 
+    					Drawable icon, Point dimension) {
 		super();
 		this.title = title;
 		this.intent = setLauncherMainActivity(componentName, 
 				Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 		this.icon = icon;
 		this.dimension = dimension;
+		this.context = context;
 	}
     
 	public void scaleIcon(Context context , Point dimen){
@@ -103,9 +101,6 @@ public class AppInfo {
 		tv.setPadding(0, dimension.x/20, 0, 0);
 		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
 		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
-		if (tf != null) {
-			tv.setTypeface(tf);
-		}
     }
     
     protected void resizeView(View view , int width, int Height){
@@ -188,7 +183,7 @@ public class AppInfo {
             for (int i = 0; i < count; i++) {
                 ResolveInfo info = apps.get(i);
                 
-                AppInfo application = new AppInfo(info.loadLabel(manager) ,
+                AppInfo application = new AppInfo(context, info.loadLabel(manager) ,
                 		new ComponentName(info.activityInfo.applicationInfo.packageName, 
                 				info.activityInfo.name), 
                 				loadFullResIcon(info, manager),
@@ -220,15 +215,14 @@ public class AppInfo {
 		return info.loadIcon(manager);
 	}
 
-	public void excute(Context context) {
+	public void excute() {
 		// TODO Auto-generated method stub
 		context.startActivity(intent);
 	}
 
-	public void addMeToFavorite(Context context,
-			AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
+	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
 		// TODO Auto-generated method stub
-		FavoriteAppInfo favoriteInfo = new FavoriteAppInfo(title , intent.getComponent(), icon , dimension);
-		favoriteInfo.addMeToFavorite(context , adapter , false);
+		FavoriteAppInfo favoriteInfo = new FavoriteAppInfo(context , title , intent.getComponent(), icon , dimension);
+		favoriteInfo.addMeToFavorite(adapter , false);
 	}
 }

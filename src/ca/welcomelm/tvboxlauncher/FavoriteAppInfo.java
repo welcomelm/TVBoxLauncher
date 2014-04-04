@@ -36,9 +36,9 @@ public class FavoriteAppInfo extends AppInfo {
 	
 	static private FavoriteDatabase favoriteDb;
     
-	protected FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon, 
+	protected FavoriteAppInfo(Context context , CharSequence title, ComponentName componentName, Drawable icon, 
 			Point dimension) {
-		super(title , componentName, icon, dimension);
+		super(context , title , componentName, icon, dimension);
 		this.state = USE_DEFAULT_ICON;
 		this.backgroundUri = "";
 		this.customIconUri = "";
@@ -46,10 +46,6 @@ public class FavoriteAppInfo extends AppInfo {
 		this.customIcon = null;
 		this.componentName = componentName.flattenToString();
 	}
-    
-    public static void setDb(FavoriteDatabase db){
-    	favoriteDb = db;
-    }
 
 	@Override
 	public void SetMeOnTextView(View ll , int selected) {
@@ -79,7 +75,7 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 	}
 	
-	public void addMeToFavorite(Context context , AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
+	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter, Boolean ordered) {
 		
 		if( favoriteDb.addFavorite(this , ordered) && !ordered ){
 			this.scaleIcon(context, new Point(dimension.y * 2 / 3, dimension.y * 2 /3));
@@ -98,7 +94,7 @@ public class FavoriteAppInfo extends AppInfo {
 		
 	}
 
-	public void changeCustomIcon(Context context, Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
+	public void changeCustomIcon(Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
 		// TODO Auto-generated method stub
 		try {
 			Drawable customIcon = Drawable.createFromStream(context.getContentResolver().openInputStream(uri), 
@@ -109,7 +105,7 @@ public class FavoriteAppInfo extends AppInfo {
 				state = USE_CUSTOM_ICON;
 				customIconUri = uri.toString();
 				removeMeFromFavorite(adapter, true);
-				addMeToFavorite(context , adapter , true);
+				addMeToFavorite(adapter , true);
 				adapter.notifyDataSetChanged();
 			}
 			
@@ -119,7 +115,7 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 	}
 	
-	public void changeCustomBackground(Context context, Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
+	public void changeCustomBackground(Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
 		// TODO Auto-generated method stub
 		try {
 			Drawable background = Drawable.createFromStream(context.getContentResolver().
@@ -130,7 +126,7 @@ public class FavoriteAppInfo extends AppInfo {
 				state = USE_CUSTOM_BACKGROUND;
 				backgroundUri = uri.toString();
 				removeMeFromFavorite(adapter, true);
-				addMeToFavorite(context , adapter , true);
+				addMeToFavorite(adapter , true);
 				adapter.notifyDataSetChanged();
 			}
 			
@@ -247,6 +243,8 @@ public class FavoriteAppInfo extends AppInfo {
 		
 		public static void loadFavorites(Context context, AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
 			// TODO Auto-generated method stub
+			favoriteDb = new FavoriteDatabase(context);
+			
 			SQLiteDatabase dbRead = favoriteDb.getReadableDatabase();
 			
 			Cursor cursor = dbRead.query(tableName, null, null, null, null, null, "appOrder ASC");
@@ -266,7 +264,7 @@ public class FavoriteAppInfo extends AppInfo {
 		        ResolveInfo info = manager.resolveActivity(intent, 0);
 		        
 		        if (info != null) {
-	                FavoriteAppInfo application = new FavoriteAppInfo(info.loadLabel(manager) ,
+	                FavoriteAppInfo application = new FavoriteAppInfo(context , info.loadLabel(manager) ,
 	                		new ComponentName(info.activityInfo.applicationInfo.packageName, 
 	                				info.activityInfo.name), 
 	                				loadFullResIcon(info, manager),

@@ -51,7 +51,7 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
-OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
+									OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
@@ -70,10 +70,6 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	
 	private TextView tvTime;
 	
-	private DateFormat df;
-	
-	private ConnectivityManager cm;
-	
 	private ImageView ivNetwork;
 	
 	private Button btnMenu;
@@ -86,10 +82,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 
 	private int appPopIndex;
 	
-	private FavoriteAppInfo.FavoriteDatabase favoriteDatabase;
-	private Typeface appTypeface;
-	
-	public static View currentSelectedGridView , lastSelectedGridView;
+	public View currentSelectedGridView , lastSelectedGridView;
 	
 	private ViewSwitcher vsGridView;
 	
@@ -127,9 +120,6 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 	private void setMis() {
 		// TODO Auto-generated method stub
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.TTF");
-		favoriteDatabase = new FavoriteAppInfo.FavoriteDatabase(this);
-		FavoriteAppInfo.setDb(favoriteDatabase);
-		AppInfo.setFont(appTypeface);
 	}
 
 	private void popupInit() {
@@ -209,9 +199,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		
 		Date date = new Date();
 		
-		if (df == null) {
-			df = new SimpleDateFormat(TIME_FORMAT);
-		}
+		SimpleDateFormat df = new SimpleDateFormat(TIME_FORMAT);
 		
 		tvTime.setText(df.format(date));
 	}
@@ -295,9 +283,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 
 	private void updateNetworks() {
 		// TODO Auto-generated method stub
-		if (cm == null) {
-			cm = (ConnectivityManager) MainActivity.this.getSystemService(CONNECTIVITY_SERVICE);
-		}
+		ConnectivityManager	cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
 		
 		NetworkInfo info = cm.getActiveNetworkInfo();
 		
@@ -399,7 +385,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			public void onAnimationEnd(Animation animation) {
 				// TODO Auto-generated method stub
 				AppInfo info = (AppInfo)av.getItemAtPosition(pos);
-				info.excute(MainActivity.this);					
+				info.excute();					
 			}
 		});
 		view.startAnimation(anim);
@@ -420,7 +406,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
-			info.addMeToFavorite(this , favoriteAppAdapter , gvAppCellDimension);
+			info.addMeToFavorite(favoriteAppAdapter , gvAppCellDimension);
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;
@@ -465,7 +451,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 		case R.id.menuBtnExcute:
 			appPopupMenu.dismiss();
 			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
-			info.excute(this);
+			info.excute();
 			break;
 		case R.id.menuBtnRemove:
 			appPopupMenu.dismiss();
@@ -478,7 +464,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			break;
 		case R.id.menuBtnChangeBackground:
 			appPopupMenu.dismiss();
-			Intent chooseFavoriteBackground = new Intent(MainActivity.this, ChooseFavoriteBackground.class);
+			Intent chooseFavoriteBackground = new Intent(this, ChooseFavoriteBackground.class);
 			startActivityForResult(chooseFavoriteBackground, requestBackground);
 		default:
 			break;
@@ -507,7 +493,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			
 			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
 			if (data != null) {
-				info.changeCustomIcon(MainActivity.this , data.getData(), favoriteAppAdapter);		
+				info.changeCustomIcon(data.getData(), favoriteAppAdapter);		
 			}			
 			break;
 			
@@ -515,7 +501,7 @@ OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
 			
 			info = favoriteAppAdapter.getItem(appPopIndex);
 			if (data != null) {
-				info.changeCustomBackground(MainActivity.this , data.getData(), favoriteAppAdapter);		
+				info.changeCustomBackground(data.getData(), favoriteAppAdapter);		
 			}			
 			break;
 

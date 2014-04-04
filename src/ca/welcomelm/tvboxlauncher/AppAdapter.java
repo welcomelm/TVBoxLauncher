@@ -26,14 +26,13 @@ import android.widget.TextView;
 
 public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 
-	private Context context;
+	private MainActivity context;
 	private int resID;
-	public static int currentSelected = 0x1;
-	public static int lastSelected = 0x2;
-	public static int neither = 0x3;
-	public static int count = 0;
-
-	public AppAdapter(Context context, int resID) {
+	public static final int currentSelected = 0x1;
+	public static final int lastSelected = 0x2;
+	public static final int neither = 0x3;
+	
+	public AppAdapter(MainActivity context, int resID) {
 		super(context, 0);
 		this.context = context;
 		this.resID = resID;
@@ -53,9 +52,9 @@ public class AppAdapter<T extends AppInfo> extends ArrayAdapter<T> {
 		
 		AppInfo appInfo = getItem(position);
 		
-		if (MainActivity.currentSelectedGridView == ll) {
+		if (context.currentSelectedGridView == ll) {
 			selected = currentSelected;
-		}else if (MainActivity.lastSelectedGridView == ll) {
+		}else if (context.lastSelectedGridView == ll) {
 			selected = lastSelected;
 		}
 		
