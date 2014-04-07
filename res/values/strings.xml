@@ -3,5 +3,5 @@
 
     <string name="app_name">TVBoxLauncher</string>
     <string name="menu_wallpaper">Please choose your wallpaper</string>
-
+	<string name="date_format">E, MMM ddd</string>
 </resources>

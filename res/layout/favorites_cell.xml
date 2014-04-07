@@ -8,6 +8,6 @@
     <ImageView android:id="@+id/ivFavorite" 
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:scaleType="center"/>
+        android:scaleType="centerInside"/>
 
 </LinearLayout>

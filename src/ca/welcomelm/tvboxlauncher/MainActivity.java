@@ -6,6 +6,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.WallpaperManager;
@@ -24,6 +25,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.provider.Settings.System;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -56,8 +58,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
 	private static final int requestBackground = 3;
-	
-    private final String TIME_FORMAT = "h:mma";
 
 	private GridView gvApp, gvShowApp;
 	
@@ -74,9 +74,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private Button btnMenu;
 	
-	private LinearLayout llBtnMenu , llNetAndTime, llMain; 
-	
-	private Point gvAppCellDimension, gvShowAppCellDimension;
+	private LinearLayout llNetAndTime, llMain; 
 	
 	private CustomPopupMenu mainPopupMenu, appPopupMenu;
 
@@ -120,6 +118,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private void setMis() {
 		// TODO Auto-generated method stub
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.TTF");
+		AppInfo.setContext(this);
 	}
 
 	private void popupInit() {
@@ -166,31 +165,41 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
-		gvAppCellDimension = new Point((int) (metrics.widthPixels / 3.5), (int) (metrics.heightPixels / 3.5));
-		gvShowAppCellDimension = new Point(metrics.widthPixels / 6, metrics.heightPixels / 4);
+		double appCellWidthPercent = 1.0 / 6 , appCellHeightPercent = 1.0 / 4;
+		double favoriteAppCellPercent = 1 / 3.2;
+		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
+		double gvVerticalPercent = 8 / 9.5;
+		double menuVerticalPercent = 1.5 / 9.5;
 		
-		double gvShowAppVerticalPercent = (8 / 9.3 - 3.0 / 4) / 4;
-		double gvAppVerticalPercent = (8 / 9.3 - 2 / 3.5) / 3;
+		FavoriteAppInfo.setDimension(new Point((int) (metrics.widthPixels * favoriteAppCellPercent), 
+												(int) (metrics.heightPixels * favoriteAppCellPercent)));
 		
-		gvApp.setColumnWidth((int) (metrics.widthPixels / 3));
-		gvShowApp.setColumnWidth(metrics.widthPixels / 5);
+		AppInfo.setDimension(new Point((int)(metrics.widthPixels * appCellWidthPercent), 
+										(int)(metrics.heightPixels * appCellHeightPercent)));
+		
+		double gvShowAppVerticalPercent = (gvVerticalPercent - gvShowAppCellsY * appCellHeightPercent) / (gvShowAppCellsY + 1);
+		double gvAppVerticalPercent = (gvVerticalPercent - gvAppCellsY * favoriteAppCellPercent) / (gvAppCellsY + 1);
+		
+		gvApp.setColumnWidth((int) (metrics.widthPixels / gvAppCellsX));
+		gvShowApp.setColumnWidth(metrics.widthPixels / gvShowAppCellsX);
 		gvApp.setPadding(0, (int)(metrics.heightPixels*gvAppVerticalPercent), 0, (int)(metrics.heightPixels*gvAppVerticalPercent));
 		gvApp.setVerticalSpacing((int) (metrics.heightPixels*gvAppVerticalPercent));
 		gvShowApp.setPadding(0, (int)(metrics.heightPixels * gvShowAppVerticalPercent), 
 				0, (int)(metrics.heightPixels * gvShowAppVerticalPercent));
 		gvShowApp.setVerticalSpacing((int) (metrics.heightPixels * gvShowAppVerticalPercent));
 		
-		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/20);
+		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/18);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
-		llBtnMenu.setPadding(0 , 0, metrics.widthPixels/128, 0);
-		btnMenu.getLayoutParams().width = (int) (metrics.heightPixels * 2 / 9.3);
-		llNetAndTime.setPadding(metrics.widthPixels/128, 0, 0, 0);
+		
+		
+		btnMenu.getLayoutParams().width = (int) (metrics.heightPixels * 3 * (1.5 - 1.0 / 60)/ 9.5);
+		llNetAndTime.setPadding(metrics.widthPixels/128, metrics.heightPixels / 60, metrics.widthPixels/128, 0);
 	}
 
 	private void loadFavorites() {
 		// TODO Auto-generated method stub
 		favoriteAppAdapter = new AppAdapter<FavoriteAppInfo>(this, R.layout.favorites_cell);        
-        FavoriteAppInfo.loadFavorites(this, favoriteAppAdapter, gvAppCellDimension);
+        FavoriteAppInfo.loadFavorites(favoriteAppAdapter);
         gvApp.setAdapter(favoriteAppAdapter);
         gvApp.setSelection(0);
 	}
@@ -199,9 +208,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		Date date = new Date();
 		
-		SimpleDateFormat df = new SimpleDateFormat(TIME_FORMAT);
+		SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm");
+		//SimpleDateFormat dfDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
 		
-		tvTime.setText(df.format(date));
+		tvTime.setText(dfTime.format(date)); //+ "\n" + dfDate.format(date));
+		tvTime.setTextColor(getResources().getColor(android.R.color.holo_blue_light));
 	}
 
 	private void registerIntentReceivers() {
@@ -230,25 +241,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         public void onReceive(Context context, Intent intent) {
         	if (intent.getAction().equals(Intent.ACTION_PACKAGE_ADDED) ||
         			intent.getAction().equals(Intent.ACTION_PACKAGE_REPLACED)) {              
-                AppInfo.loadApplications(MainActivity.this, allAppAdapter, gvShowAppCellDimension);
+                AppInfo.loadApplications(allAppAdapter);
 			}
         	
         	if (intent.getAction().equals(Intent.ACTION_PACKAGE_REMOVED)) {
         		String pkgName = intent.getData().getEncodedSchemeSpecificPart();
         		
-        		for (int pos = 0; pos < allAppAdapter.getCount(); pos++) {
-        			AppInfo info = allAppAdapter.getItem(pos);
-        			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
-        				allAppAdapter.remove(info);
-					}					
-				}
-
-        		for (int pos = 0; pos < favoriteAppAdapter.getCount(); pos++) {
-        			FavoriteAppInfo info = favoriteAppAdapter.getItem(pos);
-        			if (info.getIntent().getComponent().getPackageName().equals(pkgName)) {
-        				info.removeMeFromFavorite(favoriteAppAdapter, false);
-					}					
-				}
+        		AppInfo.removePkg(allAppAdapter , pkgName);
+        		FavoriteAppInfo.removePkg(favoriteAppAdapter, pkgName);
 			}
         }
     }
@@ -290,11 +290,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		if(info == null || !info.isConnected()){
 			ivNetwork.setImageResource(R.drawable.disconnect);
 		}else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
-			ivNetwork.setImageResource(R.drawable.ethernet);
+			ivNetwork.setImageResource(R.drawable.ethernet1);
 		}else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
 			ivNetwork.setImageResource(R.drawable.wifi);
 		}else{
-			ivNetwork.setImageResource(R.drawable.ethernet);
+			ivNetwork.setImageResource(R.drawable.wifi);
 		}
 	}
 
@@ -324,8 +324,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		btnMenu = (Button) findViewById(R.id.btnMenu);
 		
-		llBtnMenu = (LinearLayout) findViewById(R.id.llBtnMenu);
-		
 		llNetAndTime = (LinearLayout) findViewById(R.id.llNetAndTime);
 		
 		llMain = (LinearLayout) findViewById(R.id.llMain);
@@ -337,7 +335,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		allAppAdapter = new AppAdapter<AppInfo>(this, R.layout.app_cell);
         
-        AppInfo.loadApplications(this, allAppAdapter, gvShowAppCellDimension);
+        AppInfo.loadApplications(allAppAdapter);
         
         gvShowApp.setAdapter(allAppAdapter);
         gvShowApp.setSelection(0);
@@ -406,7 +404,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
 			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
-			info.addMeToFavorite(favoriteAppAdapter , gvAppCellDimension);
+			info.addMeToFavorite(favoriteAppAdapter);
 			return true;
 		case R.id.gvApp:
 			appPopIndex = position;

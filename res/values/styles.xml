@@ -32,12 +32,12 @@
     </style>    
 
     <style name="TextField">
-        <item name="android:typeface">serif</item>
+        <item name="android:typeface">sans</item>
         <item name="android:textColor">@android:color/black</item>
     </style>
     
     <style name="PopupMenuButtonText">
-        <item name="android:typeface">serif</item>
+        <item name="android:typeface">sans</item>
         <item name="android:textColor">@android:color/black</item>
     </style>
 

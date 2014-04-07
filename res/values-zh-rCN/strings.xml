@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">电视盒桌面</string>
-    <string name="menu_wallpaper">请选择您的墙纸</string>    
+    <string name="menu_wallpaper">请选择您的墙纸</string>
+    <string name="date_format">MMMd日, E</string>
 </resources>

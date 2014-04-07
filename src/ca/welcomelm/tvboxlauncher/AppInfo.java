@@ -3,6 +3,7 @@ package ca.welcomelm.tvboxlauncher;
 import java.util.Collections;
 import java.util.List;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -41,22 +42,20 @@ public class AppInfo {
      */
 	protected Drawable icon;
 	
-	protected Point dimension;
+	static protected Point dimension;
 	
-	protected Context context;
+	static protected Context context;
     
-    protected AppInfo(Context context , CharSequence title, ComponentName componentName, 
-    					Drawable icon, Point dimension) {
+    protected AppInfo(CharSequence title, ComponentName componentName, 
+    					Drawable icon) {
 		super();
 		this.title = title;
 		this.intent = setLauncherMainActivity(componentName, 
 				Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 		this.icon = icon;
-		this.dimension = dimension;
-		this.context = context;
 	}
     
-	public void scaleIcon(Context context , Point dimen){
+	public void scaleIcon(Point dimen){
 		
 		if ((icon == null) || !(icon instanceof BitmapDrawable)) {
 	        return;
@@ -108,38 +107,6 @@ public class AppInfo {
 		anim.setDuration(250);
 		view.startAnimation(anim);
     }
-
-    public CharSequence getTitle() {
-		return title;
-	}
-
-	public void setTitle(CharSequence title) {
-		this.title = title;
-	}
-
-
-
-	public Intent getIntent() {
-		return intent;
-	}
-
-
-
-	public void setIntent(Intent intent) {
-		this.intent = intent;
-	}
-
-
-
-	public Drawable getIcon() {
-		return icon;
-	}
-
-
-
-	public void setIcon(Drawable icon) {
-		this.icon = icon;
-	}
     
     @Override
     public boolean equals(Object o) {
@@ -165,7 +132,7 @@ public class AppInfo {
         return result;
     }
 
-	public static void loadApplications(Context context, AppAdapter<AppInfo> adapter, Point dimension) {
+	public static void loadApplications(AppAdapter<AppInfo> adapter) {
 		// TODO Auto-generated method stub
         PackageManager manager = context.getPackageManager();
 
@@ -183,22 +150,20 @@ public class AppInfo {
             for (int i = 0; i < count; i++) {
                 ResolveInfo info = apps.get(i);
                 
-                AppInfo application = new AppInfo(context, info.loadLabel(manager) ,
+                AppInfo application = new AppInfo(info.loadLabel(manager) ,
                 		new ComponentName(info.activityInfo.applicationInfo.packageName, 
                 				info.activityInfo.name), 
-                				loadFullResIcon(info, manager),
-                				dimension);
+                				loadFullResIcon(info.activityInfo.applicationInfo, manager));
                 
-                application.scaleIcon(context, new Point(dimension.y / 2, dimension.y / 2));
+                application.scaleIcon(new Point(dimension.y / 2, dimension.y / 2));
 
                 adapter.add(application);
             }
         }
 	}
 	
-	protected static Drawable loadFullResIcon(ResolveInfo info, PackageManager manager){
+	protected static Drawable loadFullResIcon(ApplicationInfo appInfo, PackageManager manager){
 		try {
-			ApplicationInfo appInfo= info.activityInfo.applicationInfo;
 			Resources res = manager.getResourcesForApplication(appInfo);
 			int displayMetrics[] = { DisplayMetrics.DENSITY_XXHIGH, DisplayMetrics.DENSITY_XHIGH , 
 					DisplayMetrics.DENSITY_HIGH , DisplayMetrics.DENSITY_MEDIUM};
@@ -212,7 +177,7 @@ public class AppInfo {
 		} catch (Exception e) {
 		}
 		
-		return info.loadIcon(manager);
+		return appInfo.loadIcon(manager);
 	}
 
 	public void excute() {
@@ -220,9 +185,35 @@ public class AppInfo {
 		context.startActivity(intent);
 	}
 
-	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter, Point dimension) {
+	public void addMeToFavorite(AppAdapter<FavoriteAppInfo> adapter) {
 		// TODO Auto-generated method stub
-		FavoriteAppInfo favoriteInfo = new FavoriteAppInfo(context , title , intent.getComponent(), icon , dimension);
+		FavoriteAppInfo favoriteInfo = new FavoriteAppInfo(title , intent.getComponent(), icon);
 		favoriteInfo.addMeToFavorite(adapter , false);
+	}
+
+	public static Point getDimension() {
+		return dimension;
+	}
+
+	public static void setDimension(Point dimension) {
+		AppInfo.dimension = dimension;
+	}
+
+	public static Context getContext() {
+		return context;
+	}
+
+	public static void setContext(Context context) {
+		AppInfo.context = context;
+	}
+
+	public static void removePkg(AppAdapter adapter,String pkgName) {
+		// TODO Auto-generated method stub
+		for (int pos = 0; pos < adapter.getCount(); pos++) {
+			AppInfo info = (AppInfo)adapter.getItem(pos);
+			if (info.intent.getComponent().getPackageName().equals(pkgName)) {
+				adapter.remove(info);
+			}					
+		}
 	}
 }
