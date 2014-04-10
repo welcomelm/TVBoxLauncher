@@ -1,6 +1,7 @@
 package ca.welcomelm.tvboxlauncher;
 
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 
 import android.app.Activity;
 import android.content.ContentResolver;

@@ -59,17 +59,24 @@ public class FavoriteAppInfo extends AppInfo {
 	@Override
 	public void SetMeOnTextView(View ll , int selected) {
 		// TODO Auto-generated method stub
+		double zoomNormal = 4.0 / 5;
+		int zoomSeleted = 40;
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
-		ImageView iv = (ImageView) ll.findViewById(R.id.ivFavorite);
+		ImageView iv = (ImageView) ll.getTag(); 
+		
+		if (iv == null) {
+			iv = (ImageView) ll.findViewById(R.id.ivFavorite);
+			ll.setTag(iv);
+		}
 
 		if (selected == AppAdapter.currentSelected) {
-			resizeView(iv, dimension.x - 20, dimension.y - 20);
+			resizeView(iv, (int)(dimension.x - zoomSeleted), (int)(dimension.y - zoomSeleted));
 		} else if (selected == AppAdapter.lastSelected){
-			resizeView(iv, dimension.x * 4 / 5, dimension.y * 4 / 5);
+			resizeView(iv, (int)(dimension.x * zoomNormal), (int)(dimension.y * zoomNormal));
 		}else{
-			iv.getLayoutParams().width = dimension.x * 4 / 5;
-			iv.getLayoutParams().height = dimension.y * 4 / 5;
+			iv.getLayoutParams().width = (int)(dimension.x * zoomNormal);
+			iv.getLayoutParams().height = (int)(dimension.y * zoomNormal);
 		}
 		
 		iv.setPadding(0, dimension.x / 30, 0, dimension.x / 30);
@@ -77,7 +84,7 @@ public class FavoriteAppInfo extends AppInfo {
 		switch (state) {
 		case USE_DEFAULT_ICON:
 			iv.setImageDrawable(icon);
-			iv.setBackgroundResource(R.drawable.app_big_background);
+			iv.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.large_app_background));
 			break;
 		case USE_CUSTOM_ICON:
 			iv.setImageDrawable(null);

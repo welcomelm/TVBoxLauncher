@@ -17,6 +17,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -25,7 +26,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.provider.Settings.System;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -72,7 +72,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageView ivNetwork;
 	
-	private Button btnMenu;
+	private ImageButton btnMenu;
 	
 	private LinearLayout llNetAndTime, llMain; 
 	
@@ -86,7 +86,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		//startSplash();
 		
 		super.onCreate(savedInstanceState);
 		
@@ -112,7 +111,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		loadApplications();
 		
-		loadAnimations();	
+		loadAnimations();
+		
+		loadStyle();
 	}
 	
 	private void setMis() {
@@ -129,21 +130,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
 		appPopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
-	}
-
-	private void startSplash() {
-		// TODO Auto-generated method stub
-		Thread splashThread = new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				// TODO Auto-generated method stub
-				startActivity(new Intent(getApplicationContext(), SplashScreen.class));
-			}
-		});
-		
-		splashThread.setName("SplashScreen");
-		splashThread.start();
 	}
 
 	private void setDimension() {
@@ -166,7 +152,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		double appCellWidthPercent = 1.0 / 6 , appCellHeightPercent = 1.0 / 4;
-		double favoriteAppCellPercent = 1 / 3.2;
+		double favoriteAppCellPercent = 1 / 3.0;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;
@@ -191,8 +177,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		tvTime.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/18);
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
 		
-		
-		btnMenu.getLayoutParams().width = (int) (metrics.heightPixels * 3 * (1.5 - 1.0 / 60)/ 9.5);
 		llNetAndTime.setPadding(metrics.widthPixels/128, metrics.heightPixels / 60, metrics.widthPixels/128, 0);
 	}
 
@@ -212,7 +196,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		//SimpleDateFormat dfDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
 		
 		tvTime.setText(dfTime.format(date)); //+ "\n" + dfDate.format(date));
-		tvTime.setTextColor(getResources().getColor(android.R.color.holo_blue_light));
 	}
 
 	private void registerIntentReceivers() {
@@ -288,13 +271,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		NetworkInfo info = cm.getActiveNetworkInfo();
 		
 		if(info == null || !info.isConnected()){
-			ivNetwork.setImageResource(R.drawable.disconnect);
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.disconnect));
 		}else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
-			ivNetwork.setImageResource(R.drawable.ethernet1);
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.ethernet));
 		}else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-			ivNetwork.setImageResource(R.drawable.wifi);
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.wifi));
 		}else{
-			ivNetwork.setImageResource(R.drawable.wifi);
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.mobile));
 		}
 	}
 
@@ -322,7 +305,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		ivNetwork = (ImageView) findViewById(R.id.ivNet);
 		
-		btnMenu = (Button) findViewById(R.id.btnMenu);
+		btnMenu = (ImageButton) findViewById(R.id.btnMenu);
 		
 		llNetAndTime = (LinearLayout) findViewById(R.id.llNetAndTime);
 		
@@ -569,5 +552,20 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		}else if (parent == gvShowApp) {
 			allAppAdapter.notifyDataSetChanged();
 		}
+	}
+	
+	public void loadStyle(){
+		AppStyle style = AppStyle.getCurrentStyle(this);
+		
+		updateNetworks();
+		tvTime.setTextColor(getResources().getColor(style.getTextColor(AppStyle.timeTextColor)));
+		//gvApp.setSelector(style.getImageId(AppStyle.large_selector));
+		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
+		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
+		mainPopupMenu.setupBtnBackground(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
+		appPopupMenu.setupBtnBackground(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
+		favoriteAppAdapter.notifyDataSetChanged();
+		allAppAdapter.notifyDataSetChanged();
 	}
 }

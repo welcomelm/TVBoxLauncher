@@ -31,12 +31,13 @@
             android:layout_width="0dp"
             android:layout_weight="1"/>
             
-		<Button android:id="@+id/btnMenu"
+		<ImageButton android:id="@+id/btnMenu"
 		    android:layout_width="wrap_content"
 		    android:layout_height="fill_parent"
 		    android:layout_gravity="right"
-		    style="@style/TextField"
-		    android:background="@drawable/button"/>
+		    android:scaleType="fitEnd"
+		    android:adjustViewBounds="true"
+		    android:background="@android:color/transparent"/>
         
     </LinearLayout>
 
@@ -58,8 +59,7 @@
             android:stretchMode="spacingWidthUniform"
             android:visibility="visible"
             android:scrollbars="none"
-            android:gravity="center"
-            android:listSelector="@drawable/selector">
+            android:gravity="center">
         </GridView>
             
         <GridView android:id="@+id/gvShowApp"
@@ -70,8 +70,7 @@
             android:stretchMode="spacingWidthUniform"
             android:visibility="visible"
             android:scrollbars="none"
-            android:gravity="center"
-            android:listSelector="@drawable/small_selector">
+            android:gravity="center">
             
         </GridView>
         

@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_horizontal|bottom"
         android:singleLine="true"
-		android:background="@drawable/app_background"
 		style="@style/TextField"
+		android:layout_gravity="center"
         android:ellipsize="marquee"/>
 
 </LinearLayout>

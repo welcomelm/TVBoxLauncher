@@ -12,8 +12,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
-        android:layout_gravity="center"
-        android:background="@drawable/selector">
+        android:layout_gravity="center">
         
         <GridView
             android:id="@+id/gvFavoriteBackground"
@@ -25,7 +24,7 @@
             android:visibility="visible"
             android:scrollbars="none"
             android:gravity="center"
-            android:listSelector="@drawable/selector"
+            android:listSelector="@drawable/large_selector_blue"
             android:layout_gravity="center">
         </GridView>	
 	</LinearLayout>

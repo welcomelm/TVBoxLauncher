@@ -44,7 +44,7 @@ public class AppInfo {
 	
 	static protected Point dimension;
 	
-	static protected Context context;
+	static protected MainActivity context;
     
     protected AppInfo(CharSequence title, ComponentName componentName, 
     					Drawable icon) {
@@ -85,21 +85,29 @@ public class AppInfo {
     public void SetMeOnTextView(View ll , int selected){
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
-		TextView tv = (TextView) ll.findViewById(R.id.tvAppTitle);
+		TextView tv = (TextView) ll.getTag();
+		
+		if (tv == null) {
+			tv = (TextView) ll.findViewById(R.id.tvAppTitle);
+			ll.setTag(tv);
+		}
 		
 		if (selected == AppAdapter.currentSelected) {
-			resizeView(tv, dimension.x - 10, dimension.y - 10);
+			resizeView(tv, dimension.x - 20, dimension.y - 20);
 		} else if (selected == AppAdapter.lastSelected){
 			resizeView(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
 		}else{
-			tv.setWidth(dimension.x * 4 / 5);
-			tv.setHeight(dimension.y * 4 / 5);
+			tv.getLayoutParams().width = dimension.x * 4 / 5;
+			tv.getLayoutParams().height = dimension.y * 4 / 5;
 		}
 		
 		tv.setText(title);
 		tv.setPadding(0, dimension.x/20, 0, 0);
 		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
 		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
+		tv.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.small_app_background));
+		tv.setTextColor(context.getResources().getColor(
+				AppStyle.getCurrentStyle(context).getTextColor(AppStyle.appTextColor)));
     }
     
     protected void resizeView(View view , int width, int Height){
@@ -191,19 +199,11 @@ public class AppInfo {
 		favoriteInfo.addMeToFavorite(adapter , false);
 	}
 
-	public static Point getDimension() {
-		return dimension;
-	}
-
 	public static void setDimension(Point dimension) {
 		AppInfo.dimension = dimension;
 	}
 
-	public static Context getContext() {
-		return context;
-	}
-
-	public static void setContext(Context context) {
+	public static void setContext(MainActivity context) {
 		AppInfo.context = context;
 	}
 
