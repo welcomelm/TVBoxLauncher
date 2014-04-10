@@ -3,6 +3,7 @@ package ca.welcomelm.tvboxlauncher;
 import java.io.FileNotFoundException;
 import java.util.Arrays;
 
+import android.R.integer;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -49,7 +50,10 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 					"app_background_0" +
 					String.valueOf(i);
 			
-			adapter.add(Uri.parse(uriStr));
+			int resId = getResources().getIdentifier("app_background_0" + String.valueOf(i), 
+					"drawable", getPackageName());
+			
+			adapter.add(resId);
 		}
 		
 		gvFavoriteBackground.setAdapter(adapter);
@@ -87,7 +91,7 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		gvFavoriteBackground.setVerticalSpacing((int) (metrics.heightPixels*verticalPercent));
 	}
 	
-	private class ImageAdapter extends ArrayAdapter<Uri>{
+	private class ImageAdapter extends ArrayAdapter<Integer>{
 		
 		public ImageAdapter() {
 			// TODO Auto-generated constructor stub
@@ -114,18 +118,8 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 			iv.getLayoutParams().width = cellDemsion.x - 20;
 			iv.getLayoutParams().height = cellDemsion.y - 20;
 			
-			Drawable drawable;
-			try {
-				drawable = Drawable.createFromStream(getContentResolver().
-						openInputStream(getItem(position)), getItem(position).toString());
-				if (drawable != null) {
-					iv.setBackgroundDrawable(drawable);
-				}
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
+			iv.setBackgroundResource((Integer) gvFavoriteBackground.getAdapter().getItem(position));
+				
 			return ll;
 		}
 		
@@ -138,7 +132,9 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		
 		Intent intent = new Intent();
 		
-		intent.setData((Uri)parent.getAdapter().getItem(position));
+		intent.putExtra("TVBoxBackground", (Integer) gvFavoriteBackground.getAdapter().getItem(position));
+		
+		//intent.setData((Uri)parent.getAdapter().getItem(position));
 
 		setResult(RESULT_OK, intent);
 		finish();

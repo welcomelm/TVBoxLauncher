@@ -30,10 +30,9 @@ public class FavoriteAppInfo extends AppInfo {
 	static private FavoriteDatabase favoriteDb;
 	
 	private int state;
-	private String backgroundUri;
 	private String customIconUri;
 	
-	private Drawable background;
+	private int background;
     
 	private Drawable customIcon;
 	
@@ -50,9 +49,8 @@ public class FavoriteAppInfo extends AppInfo {
 	protected FavoriteAppInfo(CharSequence title, ComponentName componentName, Drawable icon) {
 		super(title , componentName, icon);
 		this.state = USE_DEFAULT_ICON;
-		this.backgroundUri = "";
 		this.customIconUri = "";
-		this.background = null;
+		this.background = 0;
 		this.customIcon = null;
 	}
 
@@ -92,7 +90,7 @@ public class FavoriteAppInfo extends AppInfo {
 			break;
 		case USE_CUSTOM_BACKGROUND:
 			iv.setImageDrawable(icon);
-			iv.setBackgroundDrawable(background);
+			iv.setBackgroundResource(background);
 			break;
 		default:
 			break;
@@ -145,25 +143,15 @@ public class FavoriteAppInfo extends AppInfo {
 		}
 	}
 	
-	public void changeCustomBackground(Uri uri, AppAdapter<FavoriteAppInfo> adapter) {
+	public void changeCustomBackground(int resId, AppAdapter<FavoriteAppInfo> adapter) {
 		// TODO Auto-generated method stub
-		try {
-			Drawable background = Drawable.createFromStream(context.getContentResolver().
-										openInputStream(uri), uri.toString());
-			
-			if (background != null) {
-				this.background = background;
-				state = USE_CUSTOM_BACKGROUND;
-				backgroundUri = uri.toString();
-				removeMeFromFavorite(adapter, true);
-				addMeToFavorite(adapter , true);
-				adapter.notifyDataSetChanged();
-			}
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
+		if (resId != 0) {
+			this.background = resId;
+			state = USE_CUSTOM_BACKGROUND;
+			removeMeFromFavorite(adapter, true);
+			addMeToFavorite(adapter , true);
+			adapter.notifyDataSetChanged();	
+		}
 	}
 	
 	public static void loadFavorites(AppAdapter<FavoriteAppInfo> adapter){
@@ -174,11 +162,11 @@ public class FavoriteAppInfo extends AppInfo {
 		
 		static final private String tableName = "favorites";
 		static final private String names[] = {"componentName" , "state" , "customIconUri" , 
-												"backgroundUri" , "appOrder"};
+												"backgroundId" , "appOrder"};
 		static final private int componentName = 0;
 		static final private int state = 1;
 		static final private int customIconUri = 2;
-		static final private int backgroundUri = 3;
+		static final private int backgroundId = 3;
 		static final private int order = 4;
 		
 		private int lastOrder;
@@ -237,7 +225,7 @@ public class FavoriteAppInfo extends AppInfo {
 			values.put(names[componentName], favoriteAppInfo.intent.getComponent().flattenToString());
 			values.put(names[state],         favoriteAppInfo.state);
 			values.put(names[customIconUri], favoriteAppInfo.customIconUri);
-			values.put(names[backgroundUri], favoriteAppInfo.backgroundUri);
+			values.put(names[backgroundId], favoriteAppInfo.background);
 			if (ordered && lastOrder != 0) {
 				values.put(names[order], lastOrder);
 			}else{
@@ -262,7 +250,7 @@ public class FavoriteAppInfo extends AppInfo {
 			sqlCommand.append(names[componentName] + " TEXT DEFAULT NONE,");
 			sqlCommand.append(names[state] + " INTEGER DEFAULT 0,");
 			sqlCommand.append(names[customIconUri] + " TEXT DEFAULT NONE,");
-			sqlCommand.append(names[backgroundUri] + " TEXT DEFAULT NONE,");
+			sqlCommand.append(names[backgroundId] + " INTEGER DEFAULT 0,");
 			sqlCommand.append(names[order] + " INTEGER DEFAULT 0)");
 
 			db.execSQL(sqlCommand.toString());
@@ -324,20 +312,7 @@ public class FavoriteAppInfo extends AppInfo {
 	                	}						
 						break;
 					case USE_CUSTOM_BACKGROUND:
-	                	try{
-	                		application.backgroundUri = cursor.getString(cursor.getColumnIndex(names[backgroundUri]));
-		                	Uri uri = Uri.parse(application.backgroundUri);
-		                	Drawable background = Drawable.createFromStream(
-		                			context.getContentResolver().openInputStream(uri), 
-									uri.toString());
-		                	if (background != null) {
-		                		application.background = background;
-		                	} else {
-		                		application.state = USE_DEFAULT_ICON;
-		                	}
-	                	}catch(Exception e){
-	                		
-	                	}						
+	                		application.background = cursor.getInt(cursor.getColumnIndex(names[backgroundId]));						
 						break;
 
 					default:

@@ -482,7 +482,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			
 			info = favoriteAppAdapter.getItem(appPopIndex);
 			if (data != null) {
-				info.changeCustomBackground(data.getData(), favoriteAppAdapter);		
+				Bundle bundle = data.getExtras();
+				info.changeCustomBackground(bundle.getInt("TVBoxBackground"), favoriteAppAdapter);		
 			}			
 			break;
 
@@ -559,7 +560,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		updateNetworks();
 		tvTime.setTextColor(getResources().getColor(style.getTextColor(AppStyle.timeTextColor)));
-		//gvApp.setSelector(style.getImageId(AppStyle.large_selector));
+		gvApp.setSelector(style.getImageId(AppStyle.large_selector));
 		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
 		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
 		mainPopupMenu.setupBtnBackground(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
