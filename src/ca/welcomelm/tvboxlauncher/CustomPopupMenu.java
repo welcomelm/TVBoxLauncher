@@ -53,6 +53,7 @@ public class CustomPopupMenu extends PopupWindow {
 			btn.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 			btn.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
 			btn.setOnClickListener(context);
+			//btn.getLayoutParams().width = 9 * btn.getLayoutParams().height / 2;
 			btn.getPaint().setFakeBoldText(true);
 		}
 	}

@@ -223,6 +223,7 @@ public class FavoriteAppInfo extends AppInfo {
 			ContentValues values = new ContentValues();
 			
 			values.put(names[componentName], favoriteAppInfo.intent.getComponent().flattenToString());
+			System.out.println(favoriteAppInfo.intent.getComponent().flattenToString());
 			values.put(names[state],         favoriteAppInfo.state);
 			values.put(names[customIconUri], favoriteAppInfo.customIconUri);
 			values.put(names[backgroundId], favoriteAppInfo.background);
