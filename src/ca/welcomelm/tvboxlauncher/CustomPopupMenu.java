@@ -45,8 +45,15 @@ public class CustomPopupMenu extends PopupWindow {
 			metrics.heightPixels = 720;
 		}
 		
-		mainView.setPadding(metrics.widthPixels * 7 / 18, metrics.heightPixels / 4, 
-							metrics.widthPixels * 7 / 18, metrics.heightPixels / 4);
+		double paddingPercentY = 1.0 / idArray.length;
+		
+		double paddingPercentX = (1.0 - 4.5 / (idArray.length + (idArray.length - 1) * 0.2) * 
+									9 / 16 * (1 - 2 * paddingPercentY)) / 2;  
+		
+		mainView.setPadding((int)(metrics.widthPixels * paddingPercentX), 
+				(int)(metrics.heightPixels * paddingPercentY), 
+				(int)(metrics.widthPixels * paddingPercentX), 
+				(int)(metrics.heightPixels * paddingPercentY));
 		
 		for (int i = 0; i < idArray.length; i++) {
 			Button btn = (Button) mainView.findViewById(idArray[i]);

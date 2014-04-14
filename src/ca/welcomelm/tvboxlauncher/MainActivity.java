@@ -152,7 +152,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		double appCellWidthPercent = 1.0 / 6 , appCellHeightPercent = 1.0 / 4;
-		double favoriteAppCellPercent = 1 / 3.0;
+		double favoriteAppCellPercent = 1 / 3.2;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;

@@ -93,7 +93,7 @@ public class AppInfo {
 		}
 		
 		if (selected == AppAdapter.currentSelected) {
-			resizeView(tv, dimension.x - 20, dimension.y - 20);
+			resizeView(tv, dimension.x - 15, dimension.y - 15);
 		} else if (selected == AppAdapter.lastSelected){
 			resizeView(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
 		}else{

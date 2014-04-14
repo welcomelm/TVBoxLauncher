@@ -58,7 +58,7 @@ public class FavoriteAppInfo extends AppInfo {
 	public void SetMeOnTextView(View ll , int selected) {
 		// TODO Auto-generated method stub
 		double zoomNormal = 4.0 / 5;
-		int zoomSeleted = 40;
+		int zoomSeleted = 25;
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
 		ImageView iv = (ImageView) ll.getTag(); 
