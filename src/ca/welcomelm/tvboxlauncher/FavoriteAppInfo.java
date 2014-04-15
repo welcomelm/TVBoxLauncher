@@ -27,6 +27,9 @@ public class FavoriteAppInfo extends AppInfo {
 	private static final int USE_CUSTOM_BACKGROUND = 0x1;
 	private static final int USE_CUSTOM_ICON = 0x2;
 	
+	static double zoomNormal = 4.0 / 5;
+	static int zoomSeleted = 25;
+	
 	static private FavoriteDatabase favoriteDb;
 	
 	private int state;
@@ -56,9 +59,7 @@ public class FavoriteAppInfo extends AppInfo {
 
 	@Override
 	public void SetMeOnTextView(View ll , int selected) {
-		// TODO Auto-generated method stub
-		double zoomNormal = 4.0 / 5;
-		int zoomSeleted = 25;
+		// TODO Auto-generated method stub		
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
 		ImageView iv = (ImageView) ll.getTag(); 

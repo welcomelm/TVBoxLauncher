@@ -25,6 +25,8 @@ import android.widget.ViewSwitcher;
 
 public class ChooseFavoriteBackground extends Activity implements OnItemClickListener {
 	
+	static public String SELECTED_BACKGROUND_RESID = "ca.welcomelm.tvboxlauncher.extra.backgroundResId";
+	static public String LIST_SELECTOR = "ca.welcomelm.tvboxlauncher.extra.ChooseFavoriteBackground.selector";
 	private GridView gvFavoriteBackground;
 	private Point cellDemsion;
 	private LinearLayout llFavoriteBackground;
@@ -44,12 +46,6 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		ImageAdapter adapter = new ImageAdapter();
 		
 		for (int i = 1; i <= 9; i++) {
-			String uriStr = ContentResolver.SCHEME_ANDROID_RESOURCE + "://" + 
-					getPackageName() + '/' + 
-					"drawable" + '/' + 
-					"app_background_0" +
-					String.valueOf(i);
-			
 			int resId = getResources().getIdentifier("app_background_0" + String.valueOf(i), 
 					"drawable", getPackageName());
 			
@@ -58,6 +54,10 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		
 		gvFavoriteBackground.setAdapter(adapter);
 		gvFavoriteBackground.setOnItemClickListener(this);
+		
+		int listSelectorId = getIntent().getIntExtra(LIST_SELECTOR, 0);
+		
+		gvFavoriteBackground.setSelector(listSelectorId);
 	}
 
 	private void setDimensions() {
@@ -79,9 +79,6 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		
 		llFavoriteBackground.getLayoutParams().width = metrics.widthPixels * 4 / 5;
 		llFavoriteBackground.getLayoutParams().height = metrics.heightPixels * 4 / 5;
-		
-//		gvFavoriteBackground.getLayoutParams().width = metrics.widthPixels * 3 / 4;
-//		gvFavoriteBackground.getLayoutParams().height = metrics.heightPixels * 3 / 4;
 		
 		double verticalPercent = ( 4 / 5.0 - 3 / 5.0 ) / 4.0;
 		cellDemsion = new Point((int) (metrics.widthPixels / 5), (int) (metrics.heightPixels / 5));
@@ -132,9 +129,7 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		
 		Intent intent = new Intent();
 		
-		intent.putExtra("TVBoxBackground", (Integer) gvFavoriteBackground.getAdapter().getItem(position));
-		
-		//intent.setData((Uri)parent.getAdapter().getItem(position));
+		intent.putExtra(SELECTED_BACKGROUND_RESID, (Integer) gvFavoriteBackground.getAdapter().getItem(position));
 
 		setResult(RESULT_OK, intent);
 		finish();

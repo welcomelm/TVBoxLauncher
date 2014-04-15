@@ -60,15 +60,16 @@ public class CustomPopupMenu extends PopupWindow {
 			btn.setPadding(metrics.widthPixels/96, 0, metrics.widthPixels/96, 0);
 			btn.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
 			btn.setOnClickListener(context);
-			//btn.getLayoutParams().width = 9 * btn.getLayoutParams().height / 2;
 			btn.getPaint().setFakeBoldText(true);
 		}
 	}
 	
-	public void setupBtnBackground(Integer... idArray){
+	public void setupBtnStyle(Integer... idArray){
 		for (int i = 0; i < idArray.length; i++) {
 			Button btn = (Button) mainView.findViewById(idArray[i]);
 			btn.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.popup_menu_button_layer));
+			int colorId = AppStyle.getCurrentStyle(context).getTextColor(AppStyle.appTextColor);
+			btn.setTextColor(context.getResources().getColor(colorId));
 		}		
 	}
 }

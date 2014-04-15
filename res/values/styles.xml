@@ -39,6 +39,7 @@
     <style name="PopupMenuButtonText">
         <item name="android:typeface">sans</item>
         <item name="android:textColor">@android:color/black</item>
+        <item name="android:textStyle">italic</item>
     </style>
 
 </resources>

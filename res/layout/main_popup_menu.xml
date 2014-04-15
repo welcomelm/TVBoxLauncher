@@ -36,6 +36,18 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="SETTINGS"/>	
+	    android:text="SETTINGS"/>
+	
+		<TextView android:layout_height="0dp"
+	    android:layout_width="fill_parent"
+	    android:layout_weight="0.2"/>	
+
+	<Button android:id="@+id/menuBtnStyles" 
+	    android:layout_width="fill_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="1"
+	    android:gravity="center"
+	   	style="@style/PopupMenuButtonText"
+	    android:text="STYLES"/>	
     
 </LinearLayout>

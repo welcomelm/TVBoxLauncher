@@ -45,6 +45,9 @@ public class AppInfo {
 	static protected Point dimension;
 	
 	static protected MainActivity context;
+	
+	static double zoomNormal = 4.0 / 5;
+	static int zoomSeleted = 10;
     
     protected AppInfo(CharSequence title, ComponentName componentName, 
     					Drawable icon) {
@@ -83,8 +86,12 @@ public class AppInfo {
     }
     
     public void SetMeOnTextView(View ll , int selected){
+    	
+    	
+    	
 		ll.getLayoutParams().width = dimension.x;
 		ll.getLayoutParams().height = dimension.y;
+		
 		TextView tv = (TextView) ll.getTag();
 		
 		if (tv == null) {
@@ -93,12 +100,12 @@ public class AppInfo {
 		}
 		
 		if (selected == AppAdapter.currentSelected) {
-			resizeView(tv, dimension.x - 15, dimension.y - 15);
+			resizeView(tv, (int)(dimension.x - zoomSeleted), (int)(dimension.y - zoomSeleted));
 		} else if (selected == AppAdapter.lastSelected){
-			resizeView(tv, dimension.x * 4 / 5, dimension.y * 4 / 5);
+			resizeView(tv, (int)(dimension.x * zoomNormal), (int)(dimension.y * zoomNormal));
 		}else{
-			tv.getLayoutParams().width = dimension.x * 4 / 5;
-			tv.getLayoutParams().height = dimension.y * 4 / 5;
+			tv.getLayoutParams().width = (int)(dimension.x * zoomNormal);
+			tv.getLayoutParams().height = (int)(dimension.y * zoomNormal);
 		}
 		
 		tv.setText(title);

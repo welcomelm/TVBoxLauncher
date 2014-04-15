@@ -1,18 +1,23 @@
 package ca.welcomelm.tvboxlauncher;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
 import android.R.anim;
+import android.app.AlertDialog;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 
 public class AppStyle {
 	
-	static final private String[] supportedStyle = {"blue"};
+	static final private String[] supportedStyles = {"blue" , "black"};
+	static final public int blue = 0;
+	static final public int black = 1;
 	static final private HashMap<String, Integer[]> textColorMap;
 	static final private String[] supportedComponents = {"disconnect" , "ethernet" , "large_app_background" ,
 										"large_selector" , "menu_button_layer" , "popup_menu_button_layer" ,
@@ -37,8 +42,13 @@ public class AppStyle {
 	private Integer textColor[];
 	
 	static{
+		
+	}
+	
+	static{
 		textColorMap = new HashMap<String, Integer[]>();
-		textColorMap.put("blue", new Integer[]{android.R.color.holo_blue_dark , android.R.color.black});
+		textColorMap.put(supportedStyles[blue], new Integer[]{android.R.color.holo_blue_dark , android.R.color.black});
+		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
 	}
 	
 	private AppStyle(String style , MainActivity context){
@@ -77,5 +87,24 @@ public class AppStyle {
 			return 0;
 		}
 		return textColor[id];
+	}
+	
+	public static void chooseStyle(MainActivity context){
+		final MainActivity contextSaved = context;
+		AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_HOLO_LIGHT);
+		builder.setTitle("Pick your style color").setItems(supportedStyles, new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				currentStyle = supportedStyles[which];
+				currentAppStyle = new AppStyle(currentStyle , contextSaved);
+				contextSaved.loadStyle();
+			}
+		}).show();		
+	}
+	
+	static private String loadCurrentStyle(){
+		File dir = new File()
 	}
 }

@@ -9,9 +9,11 @@ import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -127,7 +129,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		mainPopupMenu = new CustomPopupMenu(this, R.layout.main_popup_menu);
 		appPopupMenu = new CustomPopupMenu(this, R.layout.app_popup_menu);
 		
-		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
+		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , R.id.menuBtnStyles);
 		appPopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
 	}
@@ -429,6 +431,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			mainPopupMenu.dismiss();
 			chooseImage(requestWallpaper);
 			break;
+		case R.id.menuBtnStyles:
+			mainPopupMenu.dismiss();
+			AppStyle.chooseStyle(this);
+			break;
 		case R.id.menuBtnExcute:
 			appPopupMenu.dismiss();
 			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
@@ -446,6 +452,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.menuBtnChangeBackground:
 			appPopupMenu.dismiss();
 			Intent chooseFavoriteBackground = new Intent(this, ChooseFavoriteBackground.class);
+			chooseFavoriteBackground.putExtra(ChooseFavoriteBackground.LIST_SELECTOR, 
+											AppStyle.getCurrentStyle(this).getImageId(AppStyle.large_selector));
 			startActivityForResult(chooseFavoriteBackground, requestBackground);
 		default:
 			break;
@@ -482,8 +490,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			
 			info = favoriteAppAdapter.getItem(appPopIndex);
 			if (data != null) {
-				Bundle bundle = data.getExtras();
-				info.changeCustomBackground(bundle.getInt("TVBoxBackground"), favoriteAppAdapter);		
+				info.changeCustomBackground(data.getIntExtra(ChooseFavoriteBackground.SELECTED_BACKGROUND_RESID, 
+											R.drawable.large_app_background_blue), favoriteAppAdapter);		
 			}			
 			break;
 
@@ -563,8 +571,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvApp.setSelector(style.getImageId(AppStyle.large_selector));
 		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
 		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
-		mainPopupMenu.setupBtnBackground(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper);
-		appPopupMenu.setupBtnBackground(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , R.id.menuBtnStyles);
+		appPopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
 		favoriteAppAdapter.notifyDataSetChanged();
 		allAppAdapter.notifyDataSetChanged();
