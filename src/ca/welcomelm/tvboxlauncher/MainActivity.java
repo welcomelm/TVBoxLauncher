@@ -2,28 +2,19 @@ package ca.welcomelm.tvboxlauncher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.WallpaperManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.Typeface;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -35,7 +26,6 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
-import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -43,16 +33,14 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
+import com.google.android.gms.ads.*;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
 									OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
@@ -66,7 +54,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private AppAdapter<AppInfo> allAppAdapter;
 	private AppAdapter<FavoriteAppInfo> favoriteAppAdapter;
 	
-	private Animation fade, scale;
+	private Animation fade;
 	
 	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver, appUpdateReceiver;
 	
@@ -85,6 +73,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	public View currentSelectedGridView , lastSelectedGridView;
 	
 	private ViewSwitcher vsGridView;
+	
+	private Boolean isMuted = false;
+	
+	private AdView adView;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -122,6 +114,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.TTF");
 		AppInfo.setContext(this);
+		AppStyle.init(this);
+		
+		AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
+		adView.loadAd(adRequest);
 	}
 
 	private void popupInit() {
@@ -129,7 +125,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		mainPopupMenu = new CustomPopupMenu(this, R.layout.main_popup_menu);
 		appPopupMenu = new CustomPopupMenu(this, R.layout.app_popup_menu);
 		
-		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , R.id.menuBtnStyles);
+		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
+							R.id.menuBtnStyles, R.id.menuBtnMute);
 		appPopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
 	}
@@ -151,13 +148,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			metrics.heightPixels = 720;
 		}
 		
+		System.out.println(metrics.toString());
+		
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		double appCellWidthPercent = 1.0 / 6 , appCellHeightPercent = 1.0 / 4;
-		double favoriteAppCellPercent = 1 / 3.2;
+		double favoriteAppCellPercent = 1 / 3.3;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
-		double gvVerticalPercent = 8 / 9.5;
-		double menuVerticalPercent = 1.5 / 9.5;
+		double gvVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels *  8 / 9.5;
+		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		
 		FavoriteAppInfo.setDimension(new Point((int) (metrics.widthPixels * favoriteAppCellPercent), 
 												(int) (metrics.heightPixels * favoriteAppCellPercent)));
@@ -263,7 +262,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private void loadAnimations() {
 		// TODO Auto-generated method stub
 		fade = AnimationUtils.loadAnimation(this, R.anim.fade);
-		scale = AnimationUtils.loadAnimation(this, R.anim.scale);
 	}
 
 	private void updateNetworks() {
@@ -273,13 +271,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		NetworkInfo info = cm.getActiveNetworkInfo();
 		
 		if(info == null || !info.isConnected()){
-			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.disconnect));
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle().getImageId(AppStyle.disconnect));
 		}else if (info.getType() == ConnectivityManager.TYPE_ETHERNET) {
-			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.ethernet));
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle().getImageId(AppStyle.ethernet));
 		}else if (info.getType() == ConnectivityManager.TYPE_WIFI) {
-			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.wifi));
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle().getImageId(AppStyle.wifi));
 		}else{
-			ivNetwork.setImageResource(AppStyle.getCurrentStyle(this).getImageId(AppStyle.mobile));
+			ivNetwork.setImageResource(AppStyle.getCurrentStyle().getImageId(AppStyle.mobile));
 		}
 	}
 
@@ -296,6 +294,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvApp.setOnFocusChangeListener(this);
 		
 		btnMenu.setOnClickListener(this);
+		btnMenu.setOnFocusChangeListener(this);
 	}
 
 	private void findViews() {
@@ -314,6 +313,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		llMain = (LinearLayout) findViewById(R.id.llMain);
 		
 		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
+		
+		adView = (AdView) findViewById(R.id.adView);
 	}
 
 	private void loadApplications() {
@@ -350,6 +351,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		final int pos = position;
 		final AdapterView<?> av = parent;
 		Animation anim = fade;
+		playSound(AppStyle.pressedSound);
 
 		anim.setAnimationListener(new AnimationListener() {
 			
@@ -412,6 +414,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
+		playSound(AppStyle.pressedSound);
 		switch (v.getId()) {
 		case R.id.btnMenu:
 			mainPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
@@ -433,7 +436,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnStyles:
 			mainPopupMenu.dismiss();
-			AppStyle.chooseStyle(this);
+			AppStyle.chooseStyle();
 			break;
 		case R.id.menuBtnExcute:
 			appPopupMenu.dismiss();
@@ -452,9 +455,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		case R.id.menuBtnChangeBackground:
 			appPopupMenu.dismiss();
 			Intent chooseFavoriteBackground = new Intent(this, ChooseFavoriteBackground.class);
-			chooseFavoriteBackground.putExtra(ChooseFavoriteBackground.LIST_SELECTOR, 
-											AppStyle.getCurrentStyle(this).getImageId(AppStyle.large_selector));
 			startActivityForResult(chooseFavoriteBackground, requestBackground);
+			break;
+		case R.id.menuBtnMute:
+			isMuted = !isMuted;
+			break;
 		default:
 			break;
 		}	
@@ -516,7 +521,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	public void onFocusChange(View v, boolean hasFocus) {
 		// TODO Auto-generated method stub
-		AppAdapter adapter;
+		if (v == btnMenu && hasFocus) {
+			playSound(AppStyle.selectedSound);
+			return;
+		}
+		
+		AppAdapter<?> adapter;
 		
 		if (v == gvApp) {
 			adapter = favoriteAppAdapter;
@@ -541,6 +551,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			long id) {
 
 		if (view != null) {
+			playSound(AppStyle.selectedSound);
 			lastSelectedGridView = currentSelectedGridView;
 			currentSelectedGridView = view;
 			if (parent == gvApp) {
@@ -564,17 +575,25 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	}
 	
 	public void loadStyle(){
-		AppStyle style = AppStyle.getCurrentStyle(this);
+		AppStyle style = AppStyle.getCurrentStyle();
 		
 		updateNetworks();
 		tvTime.setTextColor(getResources().getColor(style.getTextColor(AppStyle.timeTextColor)));
 		gvApp.setSelector(style.getImageId(AppStyle.large_selector));
 		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
 		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
-		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , R.id.menuBtnStyles);
+		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
+									R.id.menuBtnStyles , R.id.menuBtnMute);
 		appPopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
 		favoriteAppAdapter.notifyDataSetChanged();
 		allAppAdapter.notifyDataSetChanged();
+	}
+	
+	public void playSound(int id){
+		if (isMuted) {
+			return;
+		}
+		AppStyle.playSound(id);
 	}
 }

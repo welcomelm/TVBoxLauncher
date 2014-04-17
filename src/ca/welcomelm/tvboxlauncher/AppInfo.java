@@ -111,9 +111,9 @@ public class AppInfo {
 		tv.setText(title);
 		tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, dimension.x/10);
 		tv.setCompoundDrawablesWithIntrinsicBounds(null, icon, null, null);
-		tv.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.small_app_background));
+		tv.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.small_app_background));
 		tv.setTextColor(context.getResources().getColor(
-				AppStyle.getCurrentStyle(context).getTextColor(AppStyle.appTextColor)));
+				AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
 		tv.setPadding(0, dimension.x/20, 0, dimension.x/40);
 		tv.getPaint().setFakeBoldText(true);
     }

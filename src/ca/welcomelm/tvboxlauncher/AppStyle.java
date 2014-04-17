@@ -2,7 +2,10 @@ package ca.welcomelm.tvboxlauncher;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import android.R.anim;
@@ -11,17 +14,22 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.net.Uri;
 
 public class AppStyle {
 	
-	static final private String[] supportedStyles = {"blue" , "black"};
+	static private String STYLE_FOLDER = "style";
+	
+	static final private String[] supportedStyles;
 	static final public int blue = 0;
 	static final public int black = 1;
-	static final private HashMap<String, Integer[]> textColorMap;
+	static final private HashMap<String, Integer[]> textColorMap, soundsMap;
 	static final private String[] supportedComponents = {"disconnect" , "ethernet" , "large_app_background" ,
 										"large_selector" , "menu_button_layer" , "popup_menu_button_layer" ,
 										"mobile" , "small_app_background" , "small_selector" , "wifi"};
+	
 	static final public int disconnect = 0;
 	static final public int ethernet = 1;
 	static final public int large_app_background = 2;
@@ -36,24 +44,41 @@ public class AppStyle {
 	static final public int timeTextColor = 0;
 	static final public int appTextColor = 1;
 	
+	static final public int selectedSound = 0;
+	static final public int pressedSound = 1;
+	
+	static private MainActivity context;
+	static private SoundPool soundPool;
+	
 	static private AppStyle currentAppStyle;
-	static private String currentStyle = "blue";
+	static private String currentStyle;
 	private int[] styleImageIds;
 	private Integer textColor[];
+	private int sounds[];
 	
 	static{
-		
-	}
-	
-	static{
+		supportedStyles = new String[]{"blue" , "black"};
+		currentStyle = "blue";
 		textColorMap = new HashMap<String, Integer[]>();
 		textColorMap.put(supportedStyles[blue], new Integer[]{android.R.color.holo_blue_dark , android.R.color.black});
 		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
+		
+		soundsMap = new HashMap<String, Integer[]>();
+		soundsMap.put(supportedStyles[blue], new Integer[]{R.raw.button_selected_blue , R.raw.button_pressed_blue});
+		soundsMap.put(supportedStyles[black], new Integer[]{R.raw.button_selected_black , R.raw.button_pressed_black});
 	}
 	
-	private AppStyle(String style , MainActivity context){
+	private AppStyle(String style){
 		styleImageIds = new int[supportedComponents.length];
 		textColor = textColorMap.get(style);
+		
+		Integer[] soundIds = soundsMap.get(style);
+		sounds = new int[soundIds.length];
+		soundPool = new SoundPool(soundIds.length, AudioManager.STREAM_SYSTEM, 0);
+		
+		for (int i = 0; i < soundIds.length; i++) {
+			sounds[i] = soundPool.load(context, soundIds[i], 1);
+		}
 		
 		for (int i = 0; i < supportedComponents.length; i++) {
 			
@@ -64,12 +89,7 @@ public class AppStyle {
 		}
 	}
 	
-	public static AppStyle getCurrentStyle(MainActivity context){
-		
-		if (currentAppStyle == null) {
-			currentAppStyle = new AppStyle(currentStyle , context); 
-		}
-		
+	public static AppStyle getCurrentStyle(){
 		return currentAppStyle;
 	}
 	
@@ -89,7 +109,16 @@ public class AppStyle {
 		return textColor[id];
 	}
 	
-	public static void chooseStyle(MainActivity context){
+	static public void playSound(int id) {
+		
+		if (id < 0 || id >= currentAppStyle.sounds.length) {
+			return;
+		}
+		
+		soundPool.play(currentAppStyle.sounds[id], 1, 1, 0, 0, 1f);
+	}
+	
+	public static void chooseStyle(){
 		final MainActivity contextSaved = context;
 		AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_HOLO_LIGHT);
 		builder.setTitle("Pick your style color").setItems(supportedStyles, new DialogInterface.OnClickListener() {
@@ -97,14 +126,74 @@ public class AppStyle {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				// TODO Auto-generated method stub
-				currentStyle = supportedStyles[which];
-				currentAppStyle = new AppStyle(currentStyle , contextSaved);
+				if (supportedStyles[which].equals(currentStyle)) {
+					return;
+				}
+				soundPool.release();
+				currentAppStyle = new AppStyle(supportedStyles[which]);
 				contextSaved.loadStyle();
+				saveStyle(supportedStyles[which]);
 			}
 		}).show();		
 	}
 	
-	static private String loadCurrentStyle(){
-		File dir = new File()
+	static public void init(MainActivity context){
+		
+		if (AppStyle.context != null) {
+			return;
+		}
+		
+		AppStyle.context = context;
+		
+		File dir = new File(context.getExternalFilesDir(null), STYLE_FOLDER);
+		
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		
+		System.out.println(dir.toString());
+		
+		String[] styles = dir.list(new FilenameFilter() {
+			
+			@Override
+			public boolean accept(File dir, String filename) {
+				// TODO Auto-generated method stub
+				for(String style : supportedStyles){
+					if (filename.equals(style)) {
+						return true;
+					}
+				}
+				return false;
+			}
+		});
+		
+		if (styles != null && styles.length > 0) {
+			currentStyle = styles[0];
+		}
+		
+		currentAppStyle = new AppStyle(currentStyle);
+	}
+	
+	static private void saveStyle(String style){
+		File dir = new File(context.getExternalFilesDir(null), STYLE_FOLDER);
+		
+		if (!dir.exists()) {
+			dir.mkdirs();
+		}
+		
+		File[] files = dir.listFiles();
+		
+		for(File file : files){
+			file.delete();
+		}
+		
+		File newStyle = new File(dir, style);
+		
+		try {
+			newStyle.createNewFile();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

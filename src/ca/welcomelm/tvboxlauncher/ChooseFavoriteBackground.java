@@ -26,7 +26,6 @@ import android.widget.ViewSwitcher;
 public class ChooseFavoriteBackground extends Activity implements OnItemClickListener {
 	
 	static public String SELECTED_BACKGROUND_RESID = "ca.welcomelm.tvboxlauncher.extra.backgroundResId";
-	static public String LIST_SELECTOR = "ca.welcomelm.tvboxlauncher.extra.ChooseFavoriteBackground.selector";
 	private GridView gvFavoriteBackground;
 	private Point cellDemsion;
 	private LinearLayout llFavoriteBackground;
@@ -55,9 +54,7 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		gvFavoriteBackground.setAdapter(adapter);
 		gvFavoriteBackground.setOnItemClickListener(this);
 		
-		int listSelectorId = getIntent().getIntExtra(LIST_SELECTOR, 0);
-		
-		gvFavoriteBackground.setSelector(listSelectorId);
+		gvFavoriteBackground.setSelector(AppStyle.getCurrentStyle().getImageId(AppStyle.large_selector));
 	}
 
 	private void setDimensions() {

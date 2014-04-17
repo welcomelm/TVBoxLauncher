@@ -8,11 +8,12 @@ import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.PopupWindow;
 
-public class CustomPopupMenu extends PopupWindow {
+public class CustomPopupMenu extends PopupWindow implements OnFocusChangeListener {
 	
 	private MainActivity context;
 	private View mainView;
@@ -61,15 +62,24 @@ public class CustomPopupMenu extends PopupWindow {
 			btn.setTextSize(TypedValue.COMPLEX_UNIT_PX, metrics.widthPixels/50);
 			btn.setOnClickListener(context);
 			btn.getPaint().setFakeBoldText(true);
+			btn.setOnFocusChangeListener(this);
 		}
 	}
 	
 	public void setupBtnStyle(Integer... idArray){
 		for (int i = 0; i < idArray.length; i++) {
 			Button btn = (Button) mainView.findViewById(idArray[i]);
-			btn.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.popup_menu_button_layer));
-			int colorId = AppStyle.getCurrentStyle(context).getTextColor(AppStyle.appTextColor);
+			btn.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.popup_menu_button_layer));
+			int colorId = AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor);
 			btn.setTextColor(context.getResources().getColor(colorId));
 		}		
+	}
+
+	@Override
+	public void onFocusChange(View v, boolean hasFocus) {
+		// TODO Auto-generated method stub
+		if (hasFocus) {
+			context.playSound(AppStyle.selectedSound);
+		}
 	}
 }

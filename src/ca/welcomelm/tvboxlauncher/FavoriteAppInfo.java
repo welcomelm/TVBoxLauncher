@@ -83,7 +83,7 @@ public class FavoriteAppInfo extends AppInfo {
 		switch (state) {
 		case USE_DEFAULT_ICON:
 			iv.setImageDrawable(icon);
-			iv.setBackgroundResource(AppStyle.getCurrentStyle(context).getImageId(AppStyle.large_app_background));
+			iv.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.large_app_background));
 			break;
 		case USE_CUSTOM_ICON:
 			iv.setImageDrawable(null);
