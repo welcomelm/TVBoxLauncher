@@ -119,7 +119,6 @@ public class AppStyle {
 	}
 	
 	public static void chooseStyle(){
-		final MainActivity contextSaved = context;
 		AlertDialog.Builder builder = new AlertDialog.Builder(context, AlertDialog.THEME_HOLO_LIGHT);
 		builder.setTitle("Pick your style color").setItems(supportedStyles, new DialogInterface.OnClickListener() {
 			
@@ -129,9 +128,10 @@ public class AppStyle {
 				if (supportedStyles[which].equals(currentStyle)) {
 					return;
 				}
+				currentStyle = supportedStyles[which];
 				soundPool.release();
 				currentAppStyle = new AppStyle(supportedStyles[which]);
-				contextSaved.loadStyle();
+				context.loadStyle();
 				saveStyle(supportedStyles[which]);
 			}
 		}).show();		
@@ -150,8 +150,6 @@ public class AppStyle {
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		
-		System.out.println(dir.toString());
 		
 		String[] styles = dir.list(new FilenameFilter() {
 			

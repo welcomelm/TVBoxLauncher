@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private ImageButton btnMenu;
 	
-	private LinearLayout llNetAndTime, llMain; 
+	private LinearLayout llNetAndTime, llMain, llAds; 
 	
 	private CustomPopupMenu mainPopupMenu, appPopupMenu;
 
@@ -148,15 +148,15 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			metrics.heightPixels = 720;
 		}
 		
-		System.out.println(metrics.toString());
-		
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
-		double appCellWidthPercent = 1.0 / 6 , appCellHeightPercent = 1.0 / 4;
-		double favoriteAppCellPercent = 1 / 3.3;
+		double appCellWidthPercent = 1.0 / 6.0 , appCellHeightPercent = 1.0 / 4.0;
+		double favoriteAppCellPercent = 1 / 3.2;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
-		double gvVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels *  8 / 9.5;
-		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
+		double gvFavorVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels *  8 / 9.5;
+//		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
+		double gvVerticalPercent = 8 / 9.5;
+		double menuVerticalPercent = 1.5 / 9.5;
 		
 		FavoriteAppInfo.setDimension(new Point((int) (metrics.widthPixels * favoriteAppCellPercent), 
 												(int) (metrics.heightPixels * favoriteAppCellPercent)));
@@ -165,7 +165,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 										(int)(metrics.heightPixels * appCellHeightPercent)));
 		
 		double gvShowAppVerticalPercent = (gvVerticalPercent - gvShowAppCellsY * appCellHeightPercent) / (gvShowAppCellsY + 1);
-		double gvAppVerticalPercent = (gvVerticalPercent - gvAppCellsY * favoriteAppCellPercent) / (gvAppCellsY + 1);
+		double gvAppVerticalPercent = (gvFavorVerticalPercent - gvAppCellsY * favoriteAppCellPercent) / (gvAppCellsY + 1);
 		
 		gvApp.setColumnWidth((int) (metrics.widthPixels / gvAppCellsX));
 		gvShowApp.setColumnWidth(metrics.widthPixels / gvShowAppCellsX);
@@ -312,6 +312,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		llMain = (LinearLayout) findViewById(R.id.llMain);
 		
+		llAds = (LinearLayout) findViewById(R.id.llAds);
+		
 		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
 		
 		adView = (AdView) findViewById(R.id.adView);
@@ -421,7 +423,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnApps:
 			mainPopupMenu.dismiss();			
-			if (vsGridView.getCurrentView() == gvApp) {
+			if (vsGridView.getCurrentView() == llAds) {
 				vsGridView.setDisplayedChild(1);
 			}
 			break;

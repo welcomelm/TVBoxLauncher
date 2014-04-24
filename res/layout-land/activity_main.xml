@@ -29,6 +29,10 @@
         <TextView android:layout_height="fill_parent"
             android:layout_width="0dp"
             android:layout_weight="1"/>
+        
+        <TextView android:layout_height="fill_parent"
+            android:layout_width="0dp"
+            android:layout_weight="1"/>
             
 		<ImageButton android:id="@+id/btnMenu"
 		    android:layout_width="wrap_content"
@@ -49,17 +53,32 @@
         android:outAnimation="@anim/app_gridview_slideout"
         android:animateFirstView="true">
 
+        <LinearLayout android:id="@+id/llAds"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+        
         <GridView
             android:id="@+id/gvApp"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
             android:stretchMode="spacingWidthUniform"
             android:visibility="visible"
             android:scrollbars="none"
-            android:gravity="center">
+            android:gravity="center"
+            android:layout_weight="1">
         </GridView>
+        
+        <com.google.android.gms.ads.AdView android:id="@+id/adView"
+            android:layout_width="wrap_content"
+            android:layout_height="50dp"
+            android:layout_gravity="center"
+            ads:adUnitId="ca-app-pub-6252824057221692/7252812964"
+            ads:adSize="BANNER"/>
+        
+        </LinearLayout>
             
         <GridView android:id="@+id/gvShowApp"
             android:layout_width="fill_parent"
@@ -74,12 +93,5 @@
         </GridView>
         
     </ViewSwitcher>
-    
-    <com.google.android.gms.ads.AdView android:id="@+id/adView"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_gravity="center_horizontal"
-            ads:adUnitId="ca-app-pub-6252824057221692/7252812964"
-            ads:adSize="BANNER"/>
 
 </LinearLayout>
