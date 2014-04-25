@@ -33,6 +33,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -40,10 +41,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
+import ca.welcomelm.tvboxlauncher.util.IabHelper;
+import ca.welcomelm.tvboxlauncher.util.IabHelper.OnIabSetupFinishedListener;
+import ca.welcomelm.tvboxlauncher.util.IabResult;
+
 import com.google.android.gms.ads.*;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
-									OnClickListener, OnItemSelectedListener, OnFocusChangeListener {
+									OnClickListener, OnItemSelectedListener, OnFocusChangeListener, 
+									OnIabSetupFinishedListener {
 	
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
@@ -118,6 +124,11 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
 		adView.loadAd(adRequest);
+		
+		String base64EncodedPublicKey = 
+                "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgDlcAchKY52u8BZTl0z/G86IfaODUR6KNOvwR8qf60NyckR1DlyycL6cQq+z15sguTNILdEeHTvVNlosiEpJ4A89/D+fvgXiFqPcySwlQYgGg0ubdyOPtdNa8tsOcBh2+T8rc+0MgkDDkenzFLpwDaRaqEPucPLsCn9O+whhsf/3JorY+VKMTNNHPP7Grx/IkrxNDvB9le5xtpOE7rsq877l6odZjf/iiTaCX/LpQeesSdI8oqmht83vHHF1ChCHYJzLoIJsvYnU1mVM1nUuGyb+KWKVuBUKqYDnVYaZPD6yB1/P+Yw6sZYeydxSlOBoR50Xus7KAljCUhdx4GR8CwIDAQAB";
+		IabHelper mHelper = new IabHelper(this, base64EncodedPublicKey); 
+		mHelper.startSetup(this);
 	}
 
 	private void popupInit() {
@@ -153,7 +164,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		double appCellWidthPercent = 1.0 / 6.0 , appCellHeightPercent = 1.0 / 4.0;
 		double favoriteAppCellPercent = 1 / 3.2;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
-		double gvFavorVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels *  8 / 9.5;
+		double gvFavorVerticalPercent = 8 / 9.5 - 50.0 * metrics.density / metrics.heightPixels;
 //		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;
@@ -461,6 +472,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 		case R.id.menuBtnMute:
 			isMuted = !isMuted;
+			Button button = (Button)v;
+			String text = isMuted ? "UNMUTE" : "MUTE";
+			button.setText(text);
 			break;
 		default:
 			break;
@@ -503,6 +517,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			break;
 
 		default:
+			super.onActivityResult(requestCode, resultCode, data);
 			break;
 		}	
 	}
@@ -597,5 +612,13 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			return;
 		}
 		AppStyle.playSound(id);
+	}
+
+	@Override
+	public void onIabSetupFinished(IabResult result) {
+		// TODO Auto-generated method stub
+		if (result.isFailure()) {
+			System.out.println("onIabSetupFinished failed " + result);
+		}
 	}
 }

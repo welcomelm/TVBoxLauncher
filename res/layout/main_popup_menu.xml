@@ -60,6 +60,6 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="MUTE/UNMUTE"/>	
+	    android:text="MUTE"/>	
     
 </LinearLayout>

@@ -1,12 +1,16 @@
 package ca.welcomelm.tvboxlauncher;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.InvalidPropertiesFormatException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
 
 import android.R.anim;
 import android.app.AlertDialog;
@@ -20,7 +24,7 @@ import android.net.Uri;
 
 public class AppStyle {
 	
-	static private String STYLE_FOLDER = "style";
+	static private String PROP_NAME = "properties.xml";
 	
 	static final private String[] supportedStyles;
 	static final public int blue = 0;
@@ -74,7 +78,7 @@ public class AppStyle {
 		
 		Integer[] soundIds = soundsMap.get(style);
 		sounds = new int[soundIds.length];
-		soundPool = new SoundPool(soundIds.length, AudioManager.STREAM_SYSTEM, 0);
+		soundPool = new SoundPool(soundIds.length, AudioManager.STREAM_MUSIC, 0);
 		
 		for (int i = 0; i < soundIds.length; i++) {
 			sounds[i] = soundPool.load(context, soundIds[i], 1);
@@ -139,59 +143,38 @@ public class AppStyle {
 	
 	static public void init(MainActivity context){
 		
-		if (AppStyle.context != null) {
-			return;
-		}
-		
 		AppStyle.context = context;
 		
-		File dir = new File(context.getExternalFilesDir(null), STYLE_FOLDER);
-		
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		
-		String[] styles = dir.list(new FilenameFilter() {
-			
-			@Override
-			public boolean accept(File dir, String filename) {
-				// TODO Auto-generated method stub
-				for(String style : supportedStyles){
-					if (filename.equals(style)) {
-						return true;
-					}
-				}
-				return false;
-			}
-		});
-		
-		if (styles != null && styles.length > 0) {
-			currentStyle = styles[0];
+		File propXMLFile = new File(context.getExternalFilesDir(null), PROP_NAME);
+
+		Properties prop = new Properties();
+		try {
+			prop.loadFromXML(new FileInputStream(propXMLFile));
+			currentStyle = prop.getProperty("style");
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 		}
 		
 		currentAppStyle = new AppStyle(currentStyle);
 	}
 	
 	static private void saveStyle(String style){
-		File dir = new File(context.getExternalFilesDir(null), STYLE_FOLDER);
+		File propXMLFile = new File(context.getExternalFilesDir(null), PROP_NAME);
 		
-		if (!dir.exists()) {
-			dir.mkdirs();
+		Properties prop = new Properties();
+
+		try {
+			prop.loadFromXML(new FileInputStream(propXMLFile));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
 		}
 		
-		File[] files = dir.listFiles();
-		
-		for(File file : files){
-			file.delete();
-		}
-		
-		File newStyle = new File(dir, style);
+		prop.setProperty("style", style);
 		
 		try {
-			newStyle.createNewFile();
-		} catch (IOException e) {
+			prop.storeToXML(new FileOutputStream(propXMLFile), null);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 	}
 }
