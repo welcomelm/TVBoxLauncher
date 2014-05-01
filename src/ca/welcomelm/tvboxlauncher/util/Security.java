@@ -21,6 +21,8 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import ca.welcomelm.tvboxlauncher.BuildConfig;
+
 
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -59,6 +61,9 @@ public class Security {
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey) ||
                 TextUtils.isEmpty(signature)) {
             Log.e(TAG, "Purchase verification failed: missing data.");
+            if (BuildConfig.DEBUG) {
+				return true;
+			}
             return false;
         }
 

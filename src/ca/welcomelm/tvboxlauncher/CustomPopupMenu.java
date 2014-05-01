@@ -1,6 +1,7 @@
 package ca.welcomelm.tvboxlauncher;
 
 import ca.welcomelm.tvboxlauncher.R.style;
+import android.R.bool;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
@@ -73,6 +74,12 @@ public class CustomPopupMenu extends PopupWindow implements OnFocusChangeListene
 			int colorId = AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor);
 			btn.setTextColor(context.getResources().getColor(colorId));
 		}		
+	}
+	
+	public void btnSetEnabled(int btnId , Boolean enabled){
+		Button btn = (Button) mainView.findViewById(btnId);
+		btn.setEnabled(enabled);
+		btn.setVisibility(View.GONE);
 	}
 
 	@Override

@@ -28,7 +28,7 @@ public class FavoriteAppInfo extends AppInfo {
 	private static final int USE_CUSTOM_ICON = 0x2;
 	
 	static double zoomNormal = 4.0 / 5;
-	static int zoomSeleted = 25;
+	static int zoomSeleted = 20;
 	
 	static private FavoriteDatabase favoriteDb;
 	

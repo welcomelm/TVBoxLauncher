@@ -20,6 +20,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.Menu;
@@ -42,18 +43,32 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 import ca.welcomelm.tvboxlauncher.util.IabHelper;
+import ca.welcomelm.tvboxlauncher.util.IabHelper.OnConsumeFinishedListener;
+import ca.welcomelm.tvboxlauncher.util.IabHelper.OnIabPurchaseFinishedListener;
 import ca.welcomelm.tvboxlauncher.util.IabHelper.OnIabSetupFinishedListener;
+import ca.welcomelm.tvboxlauncher.util.IabHelper.QueryInventoryFinishedListener;
 import ca.welcomelm.tvboxlauncher.util.IabResult;
+import ca.welcomelm.tvboxlauncher.util.Inventory;
+import ca.welcomelm.tvboxlauncher.util.Purchase;
 
 import com.google.android.gms.ads.*;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
 									OnClickListener, OnItemSelectedListener, OnFocusChangeListener, 
-									OnIabSetupFinishedListener {
+									OnIabSetupFinishedListener, QueryInventoryFinishedListener, 
+									OnIabPurchaseFinishedListener, OnConsumeFinishedListener {
 	
 	private static final int requestWallpaper = 1;
 	private static final int requestFavoriteIcon = 2;
 	private static final int requestBackground = 3;
+	private static final int requestBuy = 4;
+	
+	private static final String TAG = "custom";
+	
+	private static final String SKU_TVLAUNCHER = "ca.welcomelm.ads";
+	
+	private static final int iabSetupFinished = 0x1 << 0;
+	private static final int iabQueryFinished = 0x1 << 1;
 
 	private GridView gvApp, gvShowApp;
 	
@@ -72,9 +87,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private LinearLayout llNetAndTime, llMain, llAds; 
 	
-	private CustomPopupMenu mainPopupMenu, appPopupMenu;
+	private CustomPopupMenu mainPopupMenu, favoritePopupMenu, appPopupMenu;
 
-	private int appPopIndex;
+	private int favoritePopIndex , appPopIndex;
 	
 	public View currentSelectedGridView , lastSelectedGridView;
 	
@@ -83,6 +98,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	private Boolean isMuted = false;
 	
 	private AdView adView;
+	
+	private IabHelper mHelper;
+	
+	private int iabStatus = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -121,25 +140,28 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		//appTypeface = Typeface.createFromAsset(getAssets(),"fonts/apps.TTF");
 		AppInfo.setContext(this);
 		AppStyle.init(this);
-		
+
 		AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
 		adView.loadAd(adRequest);
 		
 		String base64EncodedPublicKey = 
                 "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgDlcAchKY52u8BZTl0z/G86IfaODUR6KNOvwR8qf60NyckR1DlyycL6cQq+z15sguTNILdEeHTvVNlosiEpJ4A89/D+fvgXiFqPcySwlQYgGg0ubdyOPtdNa8tsOcBh2+T8rc+0MgkDDkenzFLpwDaRaqEPucPLsCn9O+whhsf/3JorY+VKMTNNHPP7Grx/IkrxNDvB9le5xtpOE7rsq877l6odZjf/iiTaCX/LpQeesSdI8oqmht83vHHF1ChCHYJzLoIJsvYnU1mVM1nUuGyb+KWKVuBUKqYDnVYaZPD6yB1/P+Yw6sZYeydxSlOBoR50Xus7KAljCUhdx4GR8CwIDAQAB";
-		IabHelper mHelper = new IabHelper(this, base64EncodedPublicKey); 
+		mHelper = new IabHelper(this, base64EncodedPublicKey); 
 		mHelper.startSetup(this);
 	}
 
 	private void popupInit() {
 		// TODO Auto-generated method stub
 		mainPopupMenu = new CustomPopupMenu(this, R.layout.main_popup_menu);
+		favoritePopupMenu = new CustomPopupMenu(this, R.layout.favorite_popup_menu);
 		appPopupMenu = new CustomPopupMenu(this, R.layout.app_popup_menu);
 		
 		mainPopupMenu.setup(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
-							R.id.menuBtnStyles, R.id.menuBtnMute);
-		appPopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+							R.id.menuBtnStyles, R.id.menuBtnMute , R.id.menuBtnBuy);
+		favoritePopupMenu.setup(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
+		appPopupMenu.setup(R.id.menuBtnExcuteApp , R.id.menuBtnUninstall , R.id.menuBtnDetails,
+						 	R.id.menuBtnToFavorite);
 	}
 
 	private void setDimension() {
@@ -161,9 +183,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
-		double appCellWidthPercent = 1.0 / 6.0 , appCellHeightPercent = 1.0 / 4.0;
-		double favoriteAppCellPercent = 1 / 3.2;
-		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 5 , gvShowAppCellsY = 3;
+		double appCellWidthPercent = 1.0 / 6.5 , appCellHeightPercent = 1.0 / 3.8;
+		double favoriteAppCellPercent = 1 / 3.1;
+		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 6 , gvShowAppCellsY = 3;
 		double gvFavorVerticalPercent = 8 / 9.5 - 50.0 * metrics.density / metrics.heightPixels;
 //		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		double gvVerticalPercent = 8 / 9.5;
@@ -254,9 +276,17 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		public void onReceive(Context context, Intent intent) {
 			// TODO Auto-generated method stub
 			updateTime();
+			
+			if (mHelper == null) {
+				return;
+			}
+			
+			if ((iabStatus & iabSetupFinished) != iabSetupFinished) {
+				mHelper.startSetup(MainActivity.this);
+			}else if ((iabStatus & iabQueryFinished) != iabQueryFinished) {
+				mHelper.queryInventoryAsync(MainActivity.this);
+			}
 		}
-		
-		
 	}
 	
 	private class NetworkUpdateReceiver extends BroadcastReceiver{
@@ -403,12 +433,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		// TODO Auto-generated method stub
 		switch (parent.getId()) {
 		case R.id.gvShowApp:
-			AppInfo info = (AppInfo)parent.getItemAtPosition(position);
-			info.addMeToFavorite(favoriteAppAdapter);
-			return true;
-		case R.id.gvApp:
 			appPopIndex = position;
 			appPopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
+			return true;
+		case R.id.gvApp:
+			favoritePopIndex = position;
+			favoritePopupMenu.showAtLocation(llMain, Gravity.CENTER, 0, 0);
 			return true;
 		default:
 			return false;
@@ -422,6 +452,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		unregisterReceiver(timeUpateReceiver);
 		unregisterReceiver(networkUpdateReceiver);
 		unregisterReceiver(appUpdateReceiver);
+		if (mHelper != null) {
+			mHelper.dispose();
+			mHelper = null;
+		}
+		if (adView != null) {
+			adView.destroy();
+			adView = null;
+		}
 	}
 
 	@Override
@@ -452,30 +490,53 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			AppStyle.chooseStyle();
 			break;
 		case R.id.menuBtnExcute:
-			appPopupMenu.dismiss();
-			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
-			info.excute();
+			favoritePopupMenu.dismiss();
+			FavoriteAppInfo favoriteInfo = favoriteAppAdapter.getItem(favoritePopIndex);
+			favoriteInfo.excute();
 			break;
 		case R.id.menuBtnRemove:
-			appPopupMenu.dismiss();
-			FavoriteAppInfo favoriteInfo = favoriteAppAdapter.getItem(appPopIndex);
+			favoritePopupMenu.dismiss();
+			favoriteInfo = favoriteAppAdapter.getItem(favoritePopIndex);
 			favoriteInfo.removeMeFromFavorite(favoriteAppAdapter , false);
 			break;
 		case R.id.menuBtnChangeIcon:
-			appPopupMenu.dismiss();
+			favoritePopupMenu.dismiss();
 			chooseImage(requestFavoriteIcon);
 			break;
 		case R.id.menuBtnChangeBackground:
-			appPopupMenu.dismiss();
+			favoritePopupMenu.dismiss();
 			Intent chooseFavoriteBackground = new Intent(this, ChooseFavoriteBackground.class);
 			startActivityForResult(chooseFavoriteBackground, requestBackground);
 			break;
 		case R.id.menuBtnMute:
+			mainPopupMenu.dismiss();
 			isMuted = !isMuted;
 			Button button = (Button)v;
 			String text = isMuted ? "UNMUTE" : "MUTE";
 			button.setText(text);
 			break;
+		case R.id.menuBtnBuy:
+			mainPopupMenu.dismiss();
+			mHelper.launchPurchaseFlow(this, SKU_TVLAUNCHER, requestBuy, this);
+			break;
+		case R.id.menuBtnExcuteApp:
+			appPopupMenu.dismiss();
+			AppInfo appInfo = allAppAdapter.getItem(appPopIndex);
+			appInfo.excute();
+			break;
+		case R.id.menuBtnToFavorite:
+			appPopupMenu.dismiss();
+			appInfo = allAppAdapter.getItem(appPopIndex);
+			appInfo.addMeToFavorite(favoriteAppAdapter);
+			break;
+		case R.id.menuBtnUninstall:
+			appPopupMenu.dismiss();
+			appInfo = allAppAdapter.getItem(appPopIndex);
+			appInfo.uninstall();
+		case R.id.menuBtnDetails:
+			appPopupMenu.dismiss();
+			appInfo = allAppAdapter.getItem(appPopIndex);
+			appInfo.showDetails();
 		default:
 			break;
 		}	
@@ -501,7 +562,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			
 		case requestFavoriteIcon:
 			
-			FavoriteAppInfo info = favoriteAppAdapter.getItem(appPopIndex);
+			FavoriteAppInfo info = favoriteAppAdapter.getItem(favoritePopIndex);
 			if (data != null) {
 				info.changeCustomIcon(data.getData(), favoriteAppAdapter);		
 			}			
@@ -509,12 +570,22 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			
 		case requestBackground:
 			
-			info = favoriteAppAdapter.getItem(appPopIndex);
+			info = favoriteAppAdapter.getItem(favoritePopIndex);
 			if (data != null) {
 				info.changeCustomBackground(data.getIntExtra(ChooseFavoriteBackground.SELECTED_BACKGROUND_RESID, 
 											R.drawable.large_app_background_blue), favoriteAppAdapter);		
 			}			
 			break;
+			
+		case requestBuy:
+
+		    // Pass on the activity result to the helper for handling
+		    if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
+		        // not handled, so handle it ourselves (here's where you'd
+		        // perform any handling of activity results not related to in-app
+		        // billing...
+		        super.onActivityResult(requestCode, resultCode, data);
+		    }
 
 		default:
 			super.onActivityResult(requestCode, resultCode, data);
@@ -600,9 +671,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
 		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
 		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
-									R.id.menuBtnStyles , R.id.menuBtnMute);
-		appPopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+									R.id.menuBtnStyles , R.id.menuBtnMute , R.id.menuBtnBuy);
+		favoritePopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
 							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
+		appPopupMenu.setupBtnStyle(R.id.menuBtnExcuteApp , R.id.menuBtnUninstall , R.id.menuBtnDetails, R.id.menuBtnToFavorite);
 		favoriteAppAdapter.notifyDataSetChanged();
 		allAppAdapter.notifyDataSetChanged();
 	}
@@ -618,7 +690,84 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	public void onIabSetupFinished(IabResult result) {
 		// TODO Auto-generated method stub
 		if (result.isFailure()) {
-			System.out.println("onIabSetupFinished failed " + result);
+			Log.d(TAG, "onIabSetupFinished failed " + result);
+			Toast.makeText(this, String.format("onIabSetupFinished failed " + result), Toast.LENGTH_SHORT).show();
+		} else {
+			Log.d(TAG, "onIabSetupFinished passed");
+			Toast.makeText(this, String.format("onIabSetupFinished passed"), Toast.LENGTH_SHORT).show();
+			iabStatus |= iabSetupFinished;
+			mHelper.queryInventoryAsync(this);
 		}
+	}
+
+	@Override
+	public void onQueryInventoryFinished(IabResult result, Inventory inv) {
+		// TODO Auto-generated method stub
+		if (result.isFailure()) {
+			Log.d(TAG, "onQueryInventoryFinished failed " + result);
+			Toast.makeText(this, String.format("onQueryInventoryFinished failed " + result), Toast.LENGTH_SHORT).show();
+		}else{
+			iabStatus |= iabQueryFinished;
+			if (inv.hasPurchase(SKU_TVLAUNCHER)) {
+				Log.d(TAG, "onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER);
+				Toast.makeText(this, String.format("onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER), Toast.LENGTH_SHORT).show();
+				adView.setEnabled(false);
+				adView.setVisibility(View.GONE);
+				mainPopupMenu.btnSetEnabled(R.id.menuBtnBuy , false);
+				//mHelper.consumeAsync(inv.getPurchase(SKU_TVLAUNCHER), this);
+			}else {
+				Log.d(TAG, "onQueryInventoryFinished has not purchased " + SKU_TVLAUNCHER);
+				Toast.makeText(this, String.format("onQueryInventoryFinished has not purchased " + SKU_TVLAUNCHER), Toast.LENGTH_SHORT).show();
+			}
+		}
+	}
+
+	@Override
+	public void onIabPurchaseFinished(IabResult result, Purchase info) {
+		// TODO Auto-generated method stub
+		if (result.isFailure()) {
+			Log.d(TAG, "onIabPurchaseFinished failed " + result);
+			Toast.makeText(this, String.format("onIabPurchaseFinished failed " + result), Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		if (info.getSku().equals(SKU_TVLAUNCHER)) {
+			Log.d(TAG, "onIabPurchaseFinished passed " + info.getSignature() + " " + info.getOrderId());
+			Toast.makeText(this, String.format("onIabPurchaseFinished passed " + info.getSignature() + " " + info.getOrderId()), Toast.LENGTH_SHORT).show();
+			mHelper.queryInventoryAsync(this);
+		}
+	}
+
+	@Override
+	public void onConsumeFinished(Purchase purchase, IabResult result) {
+		// TODO Auto-generated method stub
+		if (result.isFailure()) {
+			Log.d(TAG, "onConsumeFinished failed " + result);
+			Toast.makeText(this, String.format("onConsumeFinished failed " + result), Toast.LENGTH_SHORT).show();
+			return;
+		}
+		
+		if (purchase.getSku().equals(SKU_TVLAUNCHER)) {
+			Log.d(TAG, "onConsumeFinished passed " + purchase.getSignature() + " " + purchase.getOrderId());
+			Toast.makeText(this, String.format("onConsumeFinished passed " + purchase.getSignature() + " " + purchase.getOrderId()), Toast.LENGTH_SHORT).show();
+		}		
+	}
+	
+	@Override
+	protected void onPause() {
+		// TODO Auto-generated method stub
+		if (adView != null) {
+			adView.pause();
+		}
+		super.onPause();
+	}
+	
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+		if (adView != null) {
+			adView.resume();
+		}
+		super.onResume();
 	}
 }

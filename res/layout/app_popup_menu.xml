@@ -6,50 +6,50 @@
     android:gravity="center"
     android:layout_gravity="center">
     
-	<Button android:id="@+id/menuBtnExcute" 
+	<Button android:id="@+id/menuBtnExcuteApp" 
 	    android:layout_width="fill_parent"
 	    android:layout_height="0dp"
 	    android:layout_weight="1"
 	    android:gravity="center"
 		style="@style/PopupMenuButtonText"
-	    android:text="Excute"/>
+	    android:text="EXCUTE"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
 	    android:layout_weight="0.2"/>
 	
-	<Button android:id="@+id/menuBtnRemove"
+	<Button android:id="@+id/menuBtnToFavorite"
 	    android:layout_width="fill_parent"
 	    android:layout_height="0dp"
 	    android:layout_weight="1"
 	    android:gravity="center"
 		style="@style/PopupMenuButtonText"
-	    android:text="Remove"/>
+	    android:text="ADD TO DESKTOP"/>
+	
+	<TextView android:layout_height="0dp"
+	    android:layout_width="fill_parent"
+	    android:layout_weight="0.2"/>
+	
+	<Button android:id="@+id/menuBtnUninstall"
+	    android:layout_width="fill_parent"
+	    android:layout_height="0dp"
+	    android:layout_weight="1"
+	    android:gravity="center"
+		style="@style/PopupMenuButtonText"
+	    android:text="UNINSTALL"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
 	    android:layout_weight="0.2"/>	
 
-	<Button android:id="@+id/menuBtnChangeIcon" 
+	<Button android:id="@+id/menuBtnDetails" 
 	    android:layout_width="fill_parent"
 	    android:layout_height="0dp"
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="Change Icon"/>
-
-	<TextView android:layout_height="0dp"
-	    android:layout_width="fill_parent"
-	    android:layout_weight="0.2"/>
-	
-	<Button android:id="@+id/menuBtnChangeBackground" 
-	    android:layout_width="fill_parent"
-	    android:layout_height="0dp"
-	    android:layout_weight="1"
-	    android:gravity="center"
-	    style="@style/PopupMenuButtonText"
-	    android:onClick="onClick"
-	    android:text="Change Background"/>
+	    android:text="DETAILS"/>
     
 </LinearLayout>
+
 

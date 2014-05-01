@@ -21,6 +21,7 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.net.Uri;
+import android.util.Log;
 
 public class AppStyle {
 	
@@ -64,7 +65,7 @@ public class AppStyle {
 		supportedStyles = new String[]{"blue" , "black"};
 		currentStyle = "blue";
 		textColorMap = new HashMap<String, Integer[]>();
-		textColorMap.put(supportedStyles[blue], new Integer[]{android.R.color.holo_blue_dark , android.R.color.black});
+		textColorMap.put(supportedStyles[blue], new Integer[]{R.color.deepskyblue , android.R.color.black});
 		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
 		
 		soundsMap = new HashMap<String, Integer[]>();
@@ -145,7 +146,7 @@ public class AppStyle {
 		
 		AppStyle.context = context;
 		
-		File propXMLFile = new File(context.getExternalFilesDir(null), PROP_NAME);
+		File propXMLFile = new File(context.getFilesDir(), PROP_NAME);
 
 		Properties prop = new Properties();
 		try {
@@ -153,13 +154,14 @@ public class AppStyle {
 			currentStyle = prop.getProperty("style");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		
 		currentAppStyle = new AppStyle(currentStyle);
 	}
 	
 	static private void saveStyle(String style){
-		File propXMLFile = new File(context.getExternalFilesDir(null), PROP_NAME);
+		File propXMLFile = new File(context.getFilesDir(), PROP_NAME);
 		
 		Properties prop = new Properties();
 
@@ -175,6 +177,7 @@ public class AppStyle {
 			prop.storeToXML(new FileOutputStream(propXMLFile), null);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

@@ -18,6 +18,8 @@ import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.View;
@@ -114,7 +116,7 @@ public class AppInfo {
 		tv.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.small_app_background));
 		tv.setTextColor(context.getResources().getColor(
 				AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
-		tv.setPadding(0, dimension.x/20, 0, dimension.x/40);
+		tv.setPadding(dimension.x/40, dimension.x/20, dimension.x/40, dimension.x/40);
 		tv.getPaint().setFakeBoldText(true);
     }
     
@@ -223,5 +225,17 @@ public class AppInfo {
 				adapter.remove(info);
 			}					
 		}
+	}
+	
+	public void uninstall(){
+		Intent uninstall = new Intent(Intent.ACTION_UNINSTALL_PACKAGE);
+		uninstall.setData(Uri.parse("package:"+intent.getComponent().getPackageName()));
+		context.startActivity(uninstall);
+	}
+	
+	public void showDetails(){
+		Intent details = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+		details.setData(Uri.parse("package:"+intent.getComponent().getPackageName()));
+		context.startActivity(details);
 	}
 }
