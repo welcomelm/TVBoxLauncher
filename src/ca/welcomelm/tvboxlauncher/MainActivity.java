@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
@@ -79,7 +80,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private BroadcastReceiver timeUpateReceiver, networkUpdateReceiver, appUpdateReceiver;
 	
-	private TextView tvTime;
+	private TextView tvTime, tvToast;
 	
 	private ImageView ivNetwork;
 	
@@ -165,6 +166,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	}
 
 	private void setDimension() {
+	
+		
 		// TODO Auto-generated method stub
 		DisplayMetrics metrics = new DisplayMetrics();
 		getWindowManager().getDefaultDisplay().getMetrics(metrics);
@@ -212,6 +215,17 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		tvTime.setPadding(metrics.widthPixels/96, 0, 0, 0);
 		
 		llNetAndTime.setPadding(metrics.widthPixels/128, metrics.heightPixels / 60, metrics.widthPixels/128, 0);
+		
+		tvToast.setTextSize(metrics.widthPixels/110);
+		tvToast.setPadding(metrics.widthPixels/256, metrics.widthPixels/256, 
+				metrics.widthPixels/256, metrics.widthPixels/256);
+		tvToast.getLayoutParams().width = (int) (5 * metrics.heightPixels * menuVerticalPercent);
+	}
+	
+	@Override
+	protected void onStart() {
+		// TODO Auto-generated method stub
+		super.onStart();
 	}
 
 	private void loadFavorites() {
@@ -227,9 +241,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		Date date = new Date();
 		
 		SimpleDateFormat dfTime = new SimpleDateFormat("HH:mm");
-		//SimpleDateFormat dfDate = new SimpleDateFormat(getResources().getString(R.string.date_format));
 		
-		tvTime.setText(dfTime.format(date)); //+ "\n" + dfDate.format(date));
+		tvTime.setText(dfTime.format(date));
 	}
 
 	private void registerIntentReceivers() {
@@ -276,6 +289,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		public void onReceive(Context context, Intent intent) {
 			// TODO Auto-generated method stub
 			updateTime();
+			
+			if (favoriteAppAdapter.getCount() == 0) {
+				setToast(R.string.recommend, 10000);
+			}
 			
 			if (mHelper == null) {
 				return;
@@ -358,6 +375,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
 		
 		adView = (AdView) findViewById(R.id.adView);
+		
+		tvToast = (TextView) findViewById(R.id.tvToast);
 	}
 
 	private void loadApplications() {
@@ -452,7 +471,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		unregisterReceiver(timeUpateReceiver);
 		unregisterReceiver(networkUpdateReceiver);
 		unregisterReceiver(appUpdateReceiver);
-		if (mHelper != null) {
+		if ((mHelper != null) && 
+				((iabStatus & iabSetupFinished) == iabSetupFinished)) {
 			mHelper.dispose();
 			mHelper = null;
 		}
@@ -512,11 +532,22 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			mainPopupMenu.dismiss();
 			isMuted = !isMuted;
 			Button button = (Button)v;
-			String text = isMuted ? "UNMUTE" : "MUTE";
-			button.setText(text);
+			int stringId = isMuted ? R.string.unmute : R.string.mute;
+			button.setText(stringId);
 			break;
 		case R.id.menuBtnBuy:
 			mainPopupMenu.dismiss();
+			
+			if (((iabStatus & iabSetupFinished) != iabSetupFinished) ||
+					((iabStatus & iabQueryFinished) != iabQueryFinished)) {
+				
+				//Toast.makeText(this, R.string.noBillingService, Toast.LENGTH_LONG).show();
+				
+				setToast(R.string.noBillingService , 4000);
+				
+				return;
+			}
+			
 			mHelper.launchPurchaseFlow(this, SKU_TVLAUNCHER, requestBuy, this);
 			break;
 		case R.id.menuBtnExcuteApp:
@@ -533,10 +564,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			appPopupMenu.dismiss();
 			appInfo = allAppAdapter.getItem(appPopIndex);
 			appInfo.uninstall();
+			break;
 		case R.id.menuBtnDetails:
 			appPopupMenu.dismiss();
 			appInfo = allAppAdapter.getItem(appPopIndex);
 			appInfo.showDetails();
+			break;
 		default:
 			break;
 		}	
@@ -602,7 +635,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
         if (infos.size() > 0) {
         	startActivityForResult(pickBackground, requestCode);
 		}else {
-			Toast.makeText(this, "Please install a file manager", Toast.LENGTH_SHORT).show();
+			setToast(R.string.noFileManager, 4000);
 		}
 	}
 
@@ -677,6 +710,10 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		appPopupMenu.setupBtnStyle(R.id.menuBtnExcuteApp , R.id.menuBtnUninstall , R.id.menuBtnDetails, R.id.menuBtnToFavorite);
 		favoriteAppAdapter.notifyDataSetChanged();
 		allAppAdapter.notifyDataSetChanged();
+		
+		tvToast.setTextColor(getResources().
+				getColor(AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
+		tvToast.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.toast));
 	}
 	
 	public void playSound(int id){
@@ -770,4 +807,18 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		}
 		super.onResume();
 	}
+	
+	private void setToast(int resId , int delayMillis){
+		tvToast.setText(resId);
+		tvToast.setVisibility(View.VISIBLE);
+		tvToast.postDelayed(new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				tvToast.setVisibility(View.INVISIBLE);
+			}
+		}, delayMillis);
+	}
+	
 }

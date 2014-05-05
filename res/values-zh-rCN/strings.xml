@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">电视盒桌面</string>
-    <string name="menu_wallpaper">请选择您的墙纸</string>
-    <string name="date_format">MMMd日, E</string>
+    <string name="app_name">简约电视桌面</string>
+    <string name="excute">执行</string>
+    <string name="remove">移除</string>
+    <string name="icon">应用图片</string>
+    <string name="background">应用背景</string>
+    <string name="apps">应用</string>
+    <string name="wallpaper">墙纸</string>
+    <string name="settings">系统设置</string>
+    <string name="styles">风格</string>
+    <string name="mute">静音</string>
+    <string name="unmute">打开声音</string>
+    <string name="purchase">购买</string>
+    <string name="add">添加到桌面</string>
+    <string name="uninstall">卸载</string>
+    <string name="details">应用详情</string>
+    <string name="noBillingService">请升级谷歌收费服务并登陆</string>
+    <string name="noFileManager">请安装文件管理器</string>
+    <string name="recommend">请进入应用菜单并长按应用以添加应用到桌面</string>
 </resources>

@@ -43,11 +43,12 @@ public class CustomPopupMenu extends PopupWindow implements OnFocusChangeListene
 		
 		if (metrics.heightPixels > 720) {
 			metrics.heightPixels = 1080;
+			
 		}else{
 			metrics.heightPixels = 720;
 		}
 		
-		double paddingPercentY = 1.0 / idArray.length;
+		double paddingPercentY = 1.0 / idArray.length * 1.2;
 		
 		double paddingPercentX = (1.0 - 4.5 / (idArray.length + (idArray.length - 1) * 0.2) * 
 									9 / 16 * (1 - 2 * paddingPercentY)) / 2;  

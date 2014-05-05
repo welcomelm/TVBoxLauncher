@@ -39,7 +39,11 @@ public class AppInfo {
      */
 	protected Intent intent;
 
-    /**
+    public CharSequence getTitle() {
+		return title;
+	}
+
+	/**
      * The application icon.
      */
 	protected Drawable icon;
@@ -116,7 +120,7 @@ public class AppInfo {
 		tv.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.small_app_background));
 		tv.setTextColor(context.getResources().getColor(
 				AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
-		tv.setPadding(dimension.x/40, dimension.x/20, dimension.x/40, dimension.x/40);
+		tv.setPadding(dimension.x/20, dimension.x/20, dimension.x/20, dimension.x/20);
 		tv.getPaint().setFakeBoldText(true);
     }
     

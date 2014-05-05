@@ -44,8 +44,8 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 		
 		ImageAdapter adapter = new ImageAdapter();
 		
-		for (int i = 1; i <= 9; i++) {
-			int resId = getResources().getIdentifier("app_background_0" + String.valueOf(i), 
+		for (int i = 0; i < 9; i++) {
+			int resId = getResources().getIdentifier("app_background_" + String.valueOf(i), 
 					"drawable", getPackageName());
 			
 			adapter.add(resId);
@@ -109,8 +109,8 @@ public class ChooseFavoriteBackground extends Activity implements OnItemClickLis
 			ll.getLayoutParams().width = cellDemsion.x;
 			ll.getLayoutParams().height = cellDemsion.y;
 			
-			iv.getLayoutParams().width = cellDemsion.x - 20;
-			iv.getLayoutParams().height = cellDemsion.y - 20;
+			iv.getLayoutParams().width = cellDemsion.x - 15;
+			iv.getLayoutParams().height = cellDemsion.y - 15;
 			
 			iv.setBackgroundResource((Integer) gvFavoriteBackground.getAdapter().getItem(position));
 				

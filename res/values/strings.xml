@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TVBoxLauncher</string>
-    <string name="menu_wallpaper">Please choose your wallpaper</string>
-	<string name="date_format">E, MMM ddd</string>
+    <string name="app_name">Simple TVLauncher</string>
+    <string name="excute">GO</string>
+    <string name="remove">REMOVE</string>
+    <string name="icon">APP IMAGE</string>
+    <string name="background">APP BACKGROUND</string>
+    <string name="apps">APPS</string>
+    <string name="wallpaper">WALLPAPER</string>
+    <string name="settings">SETTINGS</string>
+    <string name="styles">STYLES</string>
+    <string name="mute">MUTE</string>
+    <string name="unmute">UNMUTE</string>
+    <string name="purchase">PURCHASE</string>
+    <string name="add">+ DESKTOP</string>
+    <string name="uninstall">UNINSTALL</string>
+    <string name="details">DETAILS</string>
+    <string name="noBillingService">Please update google billing service and login</string>
+    <string name="noFileManager">Please install a file manager</string>
+    <string name="recommend">Go to apps menu and long click an app to add it to Desktop</string>
 </resources>

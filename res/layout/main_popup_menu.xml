@@ -12,7 +12,7 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 		style="@style/PopupMenuButtonText"
-	    android:text="APPS"/>
+	    android:text="@string/apps"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
@@ -24,7 +24,7 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 		style="@style/PopupMenuButtonText"
-	    android:text="WALLPAPAER"/>
+	    android:text="@string/wallpaper"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
@@ -36,7 +36,7 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="SETTINGS"/>
+	    android:text="@string/settings"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
@@ -48,7 +48,7 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="STYLES"/>
+	    android:text="@string/styles"/>
 	
 	<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
@@ -60,7 +60,7 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="MUTE"/>
+	    android:text="@string/mute"/>
 	
 		<TextView android:layout_height="0dp"
 	    android:layout_width="fill_parent"
@@ -72,6 +72,6 @@
 	    android:layout_weight="1"
 	    android:gravity="center"
 	   	style="@style/PopupMenuButtonText"
-	    android:text="PURCHASE"/>	
+	    android:text="@string/purchase"/>	
     
 </LinearLayout>
