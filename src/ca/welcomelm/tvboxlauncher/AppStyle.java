@@ -31,6 +31,7 @@ public class AppStyle {
 	static final public int blue = 0;
 	static final public int black = 1;
 	static final public int white = 2;
+	static final public int orange = 3;
 	static final private HashMap<String, Integer[]> textColorMap, soundsMap;
 	static final private String[] supportedComponents = {"disconnect" , "ethernet" , "large_app_background" ,
 										"large_selector" , "menu_button_layer" , "popup_menu_button_layer" ,
@@ -64,17 +65,19 @@ public class AppStyle {
 	private int sounds[];
 	
 	static{
-		supportedStyles = new String[]{"blue" , "black" , "white"};
+		supportedStyles = new String[]{"blue" , "black" , "white" , "orange"};
 		currentStyle = "blue";
 		textColorMap = new HashMap<String, Integer[]>();
 		textColorMap.put(supportedStyles[blue], new Integer[]{android.R.color.holo_blue_dark , android.R.color.black});
 		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
 		textColorMap.put(supportedStyles[white], new Integer[]{android.R.color.white , android.R.color.black});
+		textColorMap.put(supportedStyles[orange], new Integer[]{android.R.color.holo_orange_dark , android.R.color.black});
 		
 		soundsMap = new HashMap<String, Integer[]>();
 		soundsMap.put(supportedStyles[blue], new Integer[]{R.raw.button_selected_blue , R.raw.button_pressed_blue});
 		soundsMap.put(supportedStyles[black], new Integer[]{R.raw.button_selected_black , R.raw.button_pressed_black});
 		soundsMap.put(supportedStyles[white], new Integer[]{R.raw.button_selected_white , R.raw.button_pressed_white});
+		soundsMap.put(supportedStyles[orange], new Integer[]{R.raw.button_selected_orange , R.raw.button_pressed_orange});
 	}
 	
 	private AppStyle(String style){
