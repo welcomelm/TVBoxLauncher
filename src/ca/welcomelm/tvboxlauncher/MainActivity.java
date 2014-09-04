@@ -53,6 +53,9 @@ import ca.welcomelm.tvboxlauncher.util.Inventory;
 import ca.welcomelm.tvboxlauncher.util.Purchase;
 
 import com.google.android.gms.ads.*;
+import com.startapp.android.publish.StartAppAd;
+import com.startapp.android.publish.StartAppSDK;
+import com.startapp.android.publish.banner.Banner;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
 									OnClickListener, OnItemSelectedListener, OnFocusChangeListener, 
@@ -98,7 +101,8 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private Boolean isMuted = false;
 	
-	private AdView adView;
+	private StartAppAd startAppAd = new StartAppAd(this);
+	Banner banner;
 	
 	private IabHelper mHelper;
 	
@@ -142,8 +146,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		AppInfo.setContext(this);
 		AppStyle.init(this);
 
-		AdRequest adRequest = new AdRequest.Builder().addTestDevice(AdRequest.DEVICE_ID_EMULATOR).build();
-		adView.loadAd(adRequest);
+		StartAppSDK.init(this, "108561043", "209167028", false);
 		
 		String base64EncodedPublicKey = 
                 "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgDlcAchKY52u8BZTl0z/G86IfaODUR6KNOvwR8qf60NyckR1DlyycL6cQq+z15sguTNILdEeHTvVNlosiEpJ4A89/D+fvgXiFqPcySwlQYgGg0ubdyOPtdNa8tsOcBh2+T8rc+0MgkDDkenzFLpwDaRaqEPucPLsCn9O+whhsf/3JorY+VKMTNNHPP7Grx/IkrxNDvB9le5xtpOE7rsq877l6odZjf/iiTaCX/LpQeesSdI8oqmht83vHHF1ChCHYJzLoIJsvYnU1mVM1nUuGyb+KWKVuBUKqYDnVYaZPD6yB1/P+Yw6sZYeydxSlOBoR50Xus7KAljCUhdx4GR8CwIDAQAB";
@@ -374,7 +377,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
 		
-		adView = (AdView) findViewById(R.id.adView);
+		banner = (com.startapp.android.publish.banner.Banner) findViewById(R.id.startAppBanner);
 		
 		tvToast = (TextView) findViewById(R.id.tvToast);
 	}
@@ -475,10 +478,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 				((iabStatus & iabSetupFinished) == iabSetupFinished)) {
 			mHelper.dispose();
 			mHelper = null;
-		}
-		if (adView != null) {
-			adView.destroy();
-			adView = null;
 		}
 	}
 
@@ -714,6 +713,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		tvToast.setTextColor(getResources().
 				getColor(AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
 		tvToast.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.toast));
+		try {
+			WallpaperManager.getInstance(this).setResource(AppStyle.getCurrentStyle().getImageId(AppStyle.wallpaper));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	public void playSound(int id){
@@ -748,8 +753,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			if (inv.hasPurchase(SKU_TVLAUNCHER)) {
 				Log.d(TAG, "onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER);
 				Toast.makeText(this, String.format("onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER), Toast.LENGTH_SHORT).show();
-				adView.setEnabled(false);
-				adView.setVisibility(View.GONE);
+				banner.hideBanner();
 				mainPopupMenu.btnSetEnabled(R.id.menuBtnBuy , false);
 				//mHelper.consumeAsync(inv.getPurchase(SKU_TVLAUNCHER), this);
 			}else {
@@ -793,18 +797,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
-		if (adView != null) {
-			adView.pause();
-		}
+		startAppAd.onPause();	
 		super.onPause();
 	}
 	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
-		if (adView != null) {
-			adView.resume();
-		}
+		startAppAd.onResume();
 		super.onResume();
 	}
 	

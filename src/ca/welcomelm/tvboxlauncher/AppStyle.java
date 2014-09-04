@@ -36,7 +36,8 @@ public class AppStyle {
 	static final private HashMap<String, Integer[]> textColorMap, soundsMap;
 	static final private String[] supportedComponents = {"disconnect" , "ethernet" , "large_app_background" ,
 										"large_selector" , "menu_button_layer" , "popup_menu_button_layer" ,
-										"mobile" , "small_app_background" , "small_selector" , "wifi" , "toast"};
+										"mobile" , "small_app_background" , "small_selector" , "wifi" , "toast" ,
+										"wallpaper"};
 	
 	static final public int disconnect = 0;
 	static final public int ethernet = 1;
@@ -49,6 +50,7 @@ public class AppStyle {
 	static final public int small_selector = 8;
 	static final public int wifi = 9;
 	static final public int toast = 10;
+	static final public int wallpaper = 11;
 	
 	static final public int timeTextColor = 0;
 	static final public int appTextColor = 1;
@@ -73,7 +75,7 @@ public class AppStyle {
 		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
 		textColorMap.put(supportedStyles[white], new Integer[]{android.R.color.white , android.R.color.black});
 		textColorMap.put(supportedStyles[orange], new Integer[]{android.R.color.holo_orange_dark , android.R.color.black});
-		textColorMap.put(supportedStyles[green], new Integer[]{android.R.color.holo_green_light , android.R.color.black});
+		textColorMap.put(supportedStyles[green], new Integer[]{android.R.color.holo_green_dark , android.R.color.black});
 		
 		soundsMap = new HashMap<String, Integer[]>();
 		soundsMap.put(supportedStyles[blue], new Integer[]{R.raw.button_selected_blue , R.raw.button_pressed_blue});

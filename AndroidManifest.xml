@@ -43,6 +43,11 @@
             android:theme="@style/ChooseFavoriteBackgroundTheme"></activity>
         <activity android:name="com.google.android.gms.ads.AdActivity"
              android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"/>
+		<activity android:name="com.startapp.android.publish.list3d.List3DActivity"
+		          android:theme="@android:style/Theme" />
+		<activity android:name="com.startapp.android.publish.AppWallActivity"
+		          android:theme="@android:style/Theme.Translucent"
+		          android:configChanges="orientation|keyboardHidden|screenSize" />
     </application>
 
 </manifest>

@@ -78,12 +78,11 @@
             android:layout_weight="1">
         </GridView>
         
-        <com.google.android.gms.ads.AdView android:id="@+id/adView"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            ads:adUnitId="ca-app-pub-6252824057221692/7252812964"
-            ads:adSize="BANNER"/>
+		<com.startapp.android.publish.banner.Banner 
+		    android:id="@+id/startAppBanner"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_centerHorizontal="true"/>
         
         </LinearLayout>
             
