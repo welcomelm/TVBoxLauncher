@@ -200,9 +200,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		double appCellWidthPercent = 1.0 / 6.5 , appCellHeightPercent = 1.0 / 3.8;
-		double favoriteAppCellPercent = 1 / 3.05;
+		double favoriteAppCellPercent = 1 / 3.1;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 6 , gvShowAppCellsY = 3;
-		double gvFavorVerticalPercent = 8 / 9.5 - 100.0 * metrics.density / metrics.heightPixels;
+		double gvFavorVerticalPercent = 8 / 9.5 - 75.0 * metrics.density / metrics.heightPixels;
 //		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;
@@ -229,7 +229,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		llNetAndTime.setPadding(metrics.widthPixels/128, metrics.heightPixels / 60, metrics.widthPixels/128, 0);
 		
-		tvToast.setTextSize(metrics.widthPixels/110);
+		tvToast.setTextSize(metrics.widthPixels/80);
 		tvToast.setPadding(metrics.widthPixels/256, metrics.widthPixels/256, 
 				metrics.widthPixels/256, metrics.widthPixels/256);
 		tvToast.getLayoutParams().width = (int) (5 * metrics.heightPixels * menuVerticalPercent);

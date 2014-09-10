@@ -11,11 +11,11 @@
     <string name="styles">STYLES</string>
     <string name="mute">MUTE</string>
     <string name="unmute">UNMUTE</string>
-    <string name="purchase">PURCHASE</string>
+    <string name="purchase">REMOVE ADS</string>
     <string name="add">+ DESKTOP</string>
     <string name="uninstall">UNINSTALL</string>
     <string name="details">DETAILS</string>
     <string name="noBillingService">Please update google billing service and login</string>
     <string name="noFileManager">Please install a file manager</string>
-    <string name="recommend">Go to apps menu and long click an app to add it to Desktop</string>
+    <string name="recommend">Please go to apps menu and long click an app to add it to Desktop</string>
 </resources>
