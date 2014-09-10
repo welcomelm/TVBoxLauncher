@@ -75,7 +75,7 @@ public class AppStyle {
 		textColorMap.put(supportedStyles[black], new Integer[]{android.R.color.black , android.R.color.white});
 		textColorMap.put(supportedStyles[white], new Integer[]{android.R.color.white , android.R.color.black});
 		textColorMap.put(supportedStyles[orange], new Integer[]{android.R.color.holo_orange_dark , android.R.color.black});
-		textColorMap.put(supportedStyles[green], new Integer[]{android.R.color.holo_green_dark , android.R.color.black});
+		textColorMap.put(supportedStyles[green], new Integer[]{R.color.lawngreen , android.R.color.black});
 		
 		soundsMap = new HashMap<String, Integer[]>();
 		soundsMap.put(supportedStyles[blue], new Integer[]{R.raw.button_selected_blue , R.raw.button_pressed_blue});
