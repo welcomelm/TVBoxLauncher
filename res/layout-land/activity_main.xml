@@ -5,6 +5,12 @@
     android:orientation="vertical"
     android:id="@+id/llMain">
     
+<!--     		<com.startapp.android.publish.banner.Banner 
+		    android:id="@+id/startAppBanner"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_weight="true"/> -->
+    
     <LinearLayout android:id="@+id/llNetAndTime"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
@@ -63,12 +69,13 @@
         <LinearLayout android:id="@+id/llAds"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
+            android:gravity="center"
             android:orientation="vertical">
         
         <GridView
             android:id="@+id/gvApp"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
         	android:numColumns="auto_fit"
             android:stackFromBottom="false"
             android:stretchMode="spacingWidthUniform"
@@ -77,12 +84,6 @@
             android:gravity="center"
             android:layout_weight="1">
         </GridView>
-        
-		<com.startapp.android.publish.banner.Banner 
-		    android:id="@+id/startAppBanner"
-		    android:layout_width="wrap_content"
-		    android:layout_height="wrap_content"
-		    android:layout_centerHorizontal="true"/>
         
         </LinearLayout>
             

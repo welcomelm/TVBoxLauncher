@@ -40,6 +40,7 @@ import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
@@ -52,9 +53,7 @@ import ca.welcomelm.tvboxlauncher.util.IabResult;
 import ca.welcomelm.tvboxlauncher.util.Inventory;
 import ca.welcomelm.tvboxlauncher.util.Purchase;
 
-import com.google.android.gms.ads.*;
-import com.startapp.android.publish.StartAppAd;
-import com.startapp.android.publish.StartAppSDK;
+import com.startapp.android.publish.*;
 import com.startapp.android.publish.banner.Banner;
 
 public class MainActivity extends Activity implements OnItemClickListener, OnItemLongClickListener, 
@@ -101,7 +100,6 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	
 	private Boolean isMuted = false;
 	
-	private StartAppAd startAppAd = new StartAppAd(this);
 	Banner banner;
 	
 	private IabHelper mHelper;
@@ -148,6 +146,18 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 
 		StartAppSDK.init(this, "108561043", "209167028", false);
 		
+		banner = new Banner(this);
+		LinearLayout.LayoutParams bannerParameters =
+		            new LinearLayout.LayoutParams(
+		                        RelativeLayout.LayoutParams.WRAP_CONTENT,
+		                        RelativeLayout.LayoutParams.WRAP_CONTENT);
+//		bannerParameters.addRule(RelativeLayout.CENTER_HORIZONTAL);
+//		bannerParameters.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+		
+		llAds.addView(banner, bannerParameters);
+		
+		banner.showBanner();
+		
 		String base64EncodedPublicKey = 
                 "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgDlcAchKY52u8BZTl0z/G86IfaODUR6KNOvwR8qf60NyckR1DlyycL6cQq+z15sguTNILdEeHTvVNlosiEpJ4A89/D+fvgXiFqPcySwlQYgGg0ubdyOPtdNa8tsOcBh2+T8rc+0MgkDDkenzFLpwDaRaqEPucPLsCn9O+whhsf/3JorY+VKMTNNHPP7Grx/IkrxNDvB9le5xtpOE7rsq877l6odZjf/iiTaCX/LpQeesSdI8oqmht83vHHF1ChCHYJzLoIJsvYnU1mVM1nUuGyb+KWKVuBUKqYDnVYaZPD6yB1/P+Yw6sZYeydxSlOBoR50Xus7KAljCUhdx4GR8CwIDAQAB";
 		mHelper = new IabHelper(this, base64EncodedPublicKey); 
@@ -192,7 +202,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		double appCellWidthPercent = 1.0 / 6.5 , appCellHeightPercent = 1.0 / 3.8;
 		double favoriteAppCellPercent = 1 / 3.1;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 6 , gvShowAppCellsY = 3;
-		double gvFavorVerticalPercent = 8 / 9.5 - 50.0 * metrics.density / metrics.heightPixels;
+		double gvFavorVerticalPercent = 8 / 9.5 - 100.0 * metrics.density / metrics.heightPixels;
 //		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;
@@ -377,7 +387,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		vsGridView = (ViewSwitcher) findViewById(R.id.vsGridView);
 		
-		banner = (com.startapp.android.publish.banner.Banner) findViewById(R.id.startAppBanner);
+		//banner = (com.startapp.android.publish.banner.Banner) findViewById(R.id.startAppBanner);
 		
 		tvToast = (TextView) findViewById(R.id.tvToast);
 	}
@@ -548,6 +558,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			}
 			
 			mHelper.launchPurchaseFlow(this, SKU_TVLAUNCHER, requestBuy, this);
+			purchaseHandler();
 			break;
 		case R.id.menuBtnExcuteApp:
 			appPopupMenu.dismiss();
@@ -753,14 +764,48 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			if (inv.hasPurchase(SKU_TVLAUNCHER)) {
 				Log.d(TAG, "onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER);
 				Toast.makeText(this, String.format("onQueryInventoryFinished has purchased " + SKU_TVLAUNCHER), Toast.LENGTH_SHORT).show();
-				banner.hideBanner();
-				mainPopupMenu.btnSetEnabled(R.id.menuBtnBuy , false);
+				purchaseHandler();
 				//mHelper.consumeAsync(inv.getPurchase(SKU_TVLAUNCHER), this);
 			}else {
 				Log.d(TAG, "onQueryInventoryFinished has not purchased " + SKU_TVLAUNCHER);
 				Toast.makeText(this, String.format("onQueryInventoryFinished has not purchased " + SKU_TVLAUNCHER), Toast.LENGTH_SHORT).show();
 			}
 		}
+	}
+	
+	public void purchaseHandler(){
+		banner.hideBanner();
+		llAds.removeView(banner);
+		mainPopupMenu.btnSetEnabled(R.id.menuBtnBuy , false);
+		
+		// TODO Auto-generated method stub
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		
+		if (metrics.widthPixels > 1280) {
+			metrics.widthPixels = 1920;
+		}else {
+			metrics.widthPixels = 1280;
+		}
+		
+		if (metrics.heightPixels > 720) {
+			metrics.heightPixels = 1080;
+		}else{
+			metrics.heightPixels = 720;
+		}
+		
+		double favoriteAppCellPercent = 1 / 3.02;
+		int gvAppCellsX = 3 , gvAppCellsY = 2;
+		double gvFavorVerticalPercent = 8 / 9.5;
+		
+		FavoriteAppInfo.setDimension(new Point((int) (metrics.widthPixels * favoriteAppCellPercent), 
+				(int) (metrics.heightPixels * favoriteAppCellPercent)));
+		
+		double gvAppVerticalPercent = (gvFavorVerticalPercent - gvAppCellsY * favoriteAppCellPercent) / (gvAppCellsY + 1);
+		
+		gvApp.setColumnWidth((int) (metrics.widthPixels / gvAppCellsX));
+		gvApp.setPadding(0, (int)(metrics.heightPixels*gvAppVerticalPercent), 0, (int)(metrics.heightPixels*gvAppVerticalPercent));
+		gvApp.setVerticalSpacing((int) (metrics.heightPixels*gvAppVerticalPercent));
 	}
 
 	@Override
@@ -797,14 +842,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
-		startAppAd.onPause();	
 		super.onPause();
 	}
 	
 	@Override
 	protected void onResume() {
 		// TODO Auto-generated method stub
-		startAppAd.onResume();
 		super.onResume();
 	}
 	
