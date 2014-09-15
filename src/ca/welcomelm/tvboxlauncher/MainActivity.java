@@ -135,7 +135,30 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		loadAnimations();
 		
-		loadStyle();
+		loadStyleWithoutWallpaper();
+		
+		this.getWindow().setBackgroundDrawable(WallpaperManager.getInstance(this).getDrawable());
+	}
+	
+	private void loadStyleWithoutWallpaper(){
+		AppStyle style = AppStyle.getCurrentStyle();
+		
+		updateNetworks();
+		tvTime.setTextColor(getResources().getColor(style.getTextColor(AppStyle.timeTextColor)));
+		gvApp.setSelector(style.getImageId(AppStyle.large_selector));
+		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
+		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
+		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
+									R.id.menuBtnStyles , R.id.menuBtnMute , R.id.menuBtnBuy);
+		favoritePopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
+							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
+		appPopupMenu.setupBtnStyle(R.id.menuBtnExcuteApp , R.id.menuBtnUninstall , R.id.menuBtnDetails, R.id.menuBtnToFavorite);
+		favoriteAppAdapter.notifyDataSetChanged();
+		allAppAdapter.notifyDataSetChanged();
+		
+		tvToast.setTextColor(getResources().
+				getColor(AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
+		tvToast.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.toast));		
 	}
 	
 	private void setMis() {
@@ -200,9 +223,9 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		WallpaperManager.getInstance(this).suggestDesiredDimensions(metrics.widthPixels, metrics.heightPixels);
 		
 		double appCellWidthPercent = 1.0 / 6.5 , appCellHeightPercent = 1.0 / 3.8;
-		double favoriteAppCellPercent = 1 / 3.1;
+		double favoriteAppCellPercent = 1 / 3.05;
 		int gvAppCellsX = 3 , gvAppCellsY = 2 , gvShowAppCellsX = 6 , gvShowAppCellsY = 3;
-		double gvFavorVerticalPercent = 8 / 9.5 - 75.0 * metrics.density / metrics.heightPixels;
+		double gvFavorVerticalPercent = 8 / 9.5 - 90.0 * metrics.density / metrics.heightPixels;
 //		double menuVerticalPercent = (metrics.heightPixels - 50.0 * metrics.density) / metrics.heightPixels * 1.5 / 9.5;
 		double gvVerticalPercent = 8 / 9.5;
 		double menuVerticalPercent = 1.5 / 9.5;
@@ -593,6 +616,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 			try {
 				if (data != null) {
 					WallpaperManager.getInstance(this).setStream(this.getContentResolver().openInputStream(data.getData()));
+					this.getWindow().setBackgroundDrawable(WallpaperManager.getInstance(this).getDrawable());
 				}
 			} catch (FileNotFoundException e) {
 				// TODO Auto-generated catch block
@@ -601,6 +625,7 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+			
 			break;
 			
 		case requestFavoriteIcon:
@@ -706,30 +731,14 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 	}
 	
 	public void loadStyle(){
-		AppStyle style = AppStyle.getCurrentStyle();
-		
-		updateNetworks();
-		tvTime.setTextColor(getResources().getColor(style.getTextColor(AppStyle.timeTextColor)));
-		gvApp.setSelector(style.getImageId(AppStyle.large_selector));
-		gvShowApp.setSelector(style.getImageId(AppStyle.small_selector));
-		btnMenu.setImageResource(style.getImageId(AppStyle.menu_button_layer));
-		mainPopupMenu.setupBtnStyle(R.id.menuBtnApps , R.id.menuBtnSettings , R.id.menuBtnWallpaper , 
-									R.id.menuBtnStyles , R.id.menuBtnMute , R.id.menuBtnBuy);
-		favoritePopupMenu.setupBtnStyle(R.id.menuBtnExcute , R.id.menuBtnRemove , 
-							R.id.menuBtnChangeIcon , R.id.menuBtnChangeBackground);
-		appPopupMenu.setupBtnStyle(R.id.menuBtnExcuteApp , R.id.menuBtnUninstall , R.id.menuBtnDetails, R.id.menuBtnToFavorite);
-		favoriteAppAdapter.notifyDataSetChanged();
-		allAppAdapter.notifyDataSetChanged();
-		
-		tvToast.setTextColor(getResources().
-				getColor(AppStyle.getCurrentStyle().getTextColor(AppStyle.appTextColor)));
-		tvToast.setBackgroundResource(AppStyle.getCurrentStyle().getImageId(AppStyle.toast));
+		loadStyleWithoutWallpaper();
 		try {
 			WallpaperManager.getInstance(this).setResource(AppStyle.getCurrentStyle().getImageId(AppStyle.wallpaper));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		this.getWindow().setBackgroundDrawableResource(AppStyle.getCurrentStyle().getImageId(AppStyle.wallpaper));
 	}
 	
 	public void playSound(int id){
