@@ -135,9 +135,12 @@ public class MainActivity extends Activity implements OnItemClickListener, OnIte
 		
 		loadAnimations();
 		
-		loadStyleWithoutWallpaper();
-		
-		this.getWindow().setBackgroundDrawable(WallpaperManager.getInstance(this).getDrawable());
+		if(favoriteAppAdapter.getCount() == 0){
+			loadStyle();
+		}else{
+			loadStyleWithoutWallpaper();	
+			this.getWindow().setBackgroundDrawable(WallpaperManager.getInstance(this).getDrawable());
+		}
 	}
 	
 	private void loadStyleWithoutWallpaper(){
